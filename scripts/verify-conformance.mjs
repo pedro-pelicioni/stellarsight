@@ -281,7 +281,35 @@ console.log(`  ${C.bold}payer${C.off}    ${settle.payer ?? signer.address}`);
 console.log(`  ${C.bold}network${C.off}  ${settle.network ?? NETWORK}`);
 console.log(`  ${C.bold}explorer${C.off} ${C.cyan}${explorer}${C.off}`);
 const route = new URL(TARGET).pathname;
-const amountSxt = req0.amount ? Number(req0.amount) / 1e7 : null;
+
+/**
+ * Name the asset the CHALLENGE named, never the one this repo happens to default to.
+ *
+ * These four lines used to hardcode "SXT". That was true of every run anyone had made,
+ * and silently false the moment one is made against a different SEP-41 token — the
+ * evidence writer would have stamped `0.001 SXT` onto a settlement denominated in Circle
+ * USDC, in the two artifacts a reviewer checks first. An evidence generator that labels
+ * from a default rather than from the observation is worse than one that says nothing.
+ *
+ * Order: the seller's own `extra.assetCode`, then the two Circle USDC SACs the
+ * @x402/stellar SDK pins, then the contract id itself. Never a guess.
+ */
+const USDC_SACS = {
+  CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA: "USDC", // testnet
+  CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75: "USDC", // pubnet
+};
+const assetCode =
+  req0.extra?.assetCode ??
+  USDC_SACS[req0.asset] ??
+  (req0.asset ? `${String(req0.asset).slice(0, 8)}…` : "?");
+
+/**
+ * 7 decimals is correct for a classic Stellar asset wrapped in a SAC — which is what both
+ * SXT and Circle USDC are, and what @x402/stellar assumes with DEFAULT_TOKEN_DECIMALS.
+ * A native Soroban token declaring different decimals would render wrongly here; the raw
+ * atomic `amount` is emitted alongside so the artifact stays checkable either way.
+ */
+const amountDisplay = req0.amount ? Number(req0.amount) / 1e7 : null;
 
 if (EMIT) {
   const { path } = writeEvidence("conformance", {
@@ -292,7 +320,8 @@ if (EMIT) {
     client: "@x402/fetch wrapFetchWithPayment (unmodified)",
     payer: settle.payer ?? signer.address,
     amount: req0.amount ?? null,
-    amountDisplay: amountSxt === null ? null : `${amountSxt} SXT`,
+    amountDisplay: amountDisplay === null ? null : `${amountDisplay} ${assetCode}`,
+    assetCode,
     asset: req0.asset ?? null,
     scheme: req0.scheme ?? null,
     txHash,
@@ -309,7 +338,7 @@ if (APPEND_LABEL) {
   console.log(`  ${C.dim}appended  ${appended} row to docs/TESTNET-TXS.md${C.off}`);
 } else {
   console.log(`\n  ${C.dim}Append to docs/TESTNET-TXS.md (or re-run with --append-txdoc "<label>"):${C.off}`);
-  console.log(`  | \`${txHash.slice(0, 8)}…\` | ${amountSxt ?? "?"} SXT | ${route} | [link](${explorer}) |`);
+  console.log(`  | \`${txHash.slice(0, 8)}…\` | ${amountDisplay ?? "?"} ${assetCode} | ${route} | [link](${explorer}) |`);
 }
 
 // GitHub Actions job summary: the settled hash is the point of a nightly run, so put it
@@ -327,7 +356,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
       `|---|---|`,
       `| tx | [\`${txHash}\`](${explorer}) |`,
       `| payer | \`${settle.payer ?? signer.address}\` |`,
-      `| amount | ${amountSxt ?? "?"} SXT |`,
+      `| amount | ${amountDisplay ?? "?"} ${assetCode} |`,
       `| elapsed | ${elapsedMs} ms |`,
       "",
     ].join("\n"),
