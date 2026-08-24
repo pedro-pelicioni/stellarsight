@@ -1,0 +1,8 @@
+{
+  "name": "@x402/e2e-facilitator-stellarsight",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Forwards the x402 e2e harness to the hosted STELLARSIGHT facilitator.",
+  "license": "Apache-2.0"
+}
