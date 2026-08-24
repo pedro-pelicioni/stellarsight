@@ -147,8 +147,15 @@ if (assetIssuer) {
 /* export ─────────────────────────────────────────────────────────────────── */
 
 if (process.env.GITHUB_ENV) {
+  // Register the value as a secret BEFORE writing it anywhere. Actions echoes the `env:`
+  // block of every downstream step, so without this the seed appears in a public log four
+  // times over. The key is a single-run testnet throwaway holding 2 SXT, so nothing is at
+  // risk — but a visible `S…` seed reads badly in a submission whose subject is the
+  // security of a payment path, and the reader cannot tell which kind of key it is.
+  console.log(`::add-mask::${kp.secret()}`);
   appendFileSync(process.env.GITHUB_ENV, `PAYER_SECRET=${kp.secret()}\n`);
-  console.log('exported PAYER_SECRET to $GITHUB_ENV');
+  console.log('exported PAYER_SECRET to $GITHUB_ENV (masked)');
 } else {
+  // Local use only: the caller needs the value to re-run the payment by hand.
   console.log(`PAYER_SECRET=${kp.secret()}`);
 }

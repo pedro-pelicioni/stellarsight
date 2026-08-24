@@ -28,12 +28,13 @@ jobs:
       matrix:
         node: ['22', '24']
 
-    # Two store-transport tests skip themselves without a real Redis, so a bare `npm test`
-    # reports 158 passed / 3 skipped. CI supplies one and takes that to 160 / 1: the round
-    # trip and the error-reply path are exactly the parts worth exercising against a real
-    # server rather than a mock. The last skip is the agent's live-replay check, which
-    # wants a facilitator on localhost:4021 and stays skipped here by design — booting the
-    # full stack inside CI would test the boot, not the guard.
+    # Two store-transport tests skip themselves without a real Redis, so CI supplies one:
+    # the round trip and the error-reply path are exactly the parts worth exercising
+    # against a real server rather than a mock. The runs that stay skipped here by design
+    # are the ones needing a live local stack — the agent's replay guard and the live
+    # halves of the replay-naming suite, which want a facilitator on localhost:4021.
+    # Booting the full stack inside CI would test the boot, not the guard; the nightly
+    # settles against the deployment instead. Current shape: 200 tests, 0 failing.
     services:
       redis:
         image: redis:7-alpine

@@ -82,11 +82,11 @@ jobs:
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if git diff --quiet -- docs/; then
+          if git diff --quiet -- README.md docs/; then
             echo "no evidence changed — nothing to commit"
             exit 0
           fi
-          git add docs/TESTNET-TXS.md docs/EVIDENCE.md docs/status/
+          git add README.md docs/TESTNET-TXS.md docs/EVIDENCE.md docs/status/
           HASH=$(node -p "require('./docs/status/conformance.json').txHash.slice(0,8)")
           git commit -m "chore(evidence): nightly settled payment ${HASH} [skip ci]"
           git pull --rebase origin "${GITHUB_REF_NAME}"

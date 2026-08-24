@@ -128,6 +128,57 @@ if (tally?.changed) {
   console.log(`[build-evidence] retallied TESTNET-TXS.md: ${tally.total} rows, ${tally.payments} payments`);
 }
 
+/**
+ * Rewrite the README's payment counts from the same tally.
+ *
+ * The README used to claim these numbers "cannot drift again" while this script only ever
+ * wrote docs/ — so within two days of the claim the README was three payments behind its
+ * own table. A sentence that asserts its own freshness has to be MADE fresh by something;
+ * this is that something.
+ *
+ * The prose lives between markers and is regenerated wholesale rather than regexed, so a
+ * reworded sentence cannot silently stop being updated.
+ */
+function retallyReadme(counts, provenanceCounts) {
+  const path = join(ROOT, 'README.md');
+  let md;
+  try {
+    md = readFileSync(path, 'utf8');
+  } catch {
+    return null;
+  }
+
+  const before = md;
+
+  // 1. the badge
+  md = md.replace(
+    /(badge\/settled_x402_payments-)\d+(-blue)/,
+    `$1${counts.payments}$2`,
+  );
+
+  // 2. the tally block, regenerated between its markers
+  const label = (k) => provenanceCounts[k] ?? 0;
+  const block = [
+    '<!-- evidence:tally — rewritten by `npm run evidence:build`; do not hand-edit the numbers -->',
+    `${counts.total} in total, and the split matters: **${counts.payments} are x402 payments** and ${counts.setup + counts.cleanup} are setup and cleanup`,
+    `(${counts.setup} setup, ${counts.cleanup} cleanup) — trustlines, the SAC deploy, minting the test asset, and returning a`,
+    'legacy balance. Only the payment rows are evidence that the payment path works.',
+    '',
+    `The ${counts.payments} also split by what produced them, because a settlement count without that is not`,
+    `evidence of anything: ${label('scripted-load')} from \`npm run evidence:batch\` (a serial script paying our own`,
+    `seller, prefixed \`load:\`), ${label('demo')} from the demo loop, ${label('conformance') + label('nightly-ci')} from stock-client conformance runs.`,
+    '<!-- /evidence:tally -->',
+  ].join('\n');
+
+  md = md.replace(
+    /<!-- evidence:tally[\s\S]*?<!-- \/evidence:tally -->/,
+    block,
+  );
+
+  if (md !== before) writeFileSync(path, md, 'utf8');
+  return { changed: md !== before };
+}
+
 const backfilled = backfillProvenanceFromTxDoc();
 if (backfilled.added) console.log(`[build-evidence] backfilled ${backfilled.added} hash(es) into provenance from TESTNET-TXS.md`);
 if (backfilled.conflicts?.length) {
@@ -151,6 +202,14 @@ for (const meta of Object.values(provenance?.hashes ?? {})) {
   labelCounts[meta.label] = (labelCounts[meta.label] ?? 0) + 1;
 }
 const totalLabeled = Object.values(labelCounts).reduce((a, b) => a + b, 0);
+
+// The README's counts come from the same two sources as this page, so they cannot disagree
+// with it. Done here rather than beside retallyTxDoc() because the per-label split is only
+// known once provenance has been read and backfilled.
+if (tally) {
+  const readme = retallyReadme(tally, labelCounts);
+  if (readme?.changed) console.log('[build-evidence] rewrote the README tally and badge');
+}
 
 const accounts = accountsFromTxDoc();
 const feePayer = accounts.find((a) => a.role === 'FEEPAYER')?.key;

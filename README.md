@@ -15,7 +15,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 [![network: stellar:testnet](https://img.shields.io/badge/network-stellar%3Atestnet-brightgreen)](docs/TESTNET-TXS.md)
-[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-77-blue)](docs/TESTNET-TXS.md)
+[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-81-blue)](docs/TESTNET-TXS.md)
 [![tests](https://img.shields.io/badge/tests-200,_0_failing-brightgreen)](#running-it)
 [![nDCG@10](https://img.shields.io/badge/nDCG%4010-0.864_measured-blue)](docs/SEARCH-EVAL.md)
 
@@ -37,7 +37,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 | Catalog integrity is real, not decorative | `npm test` → 200 tests, 0 failing (66 of them adversarial) | 30s |
 | Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI | 20s |
 | We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys | 60s |
-| It stays that way | [CI](../../actions) runs the suite, the 46 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
+| It stays that way | [CI](../../actions) runs the suite, the 49 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
 | Attacks are refused **and named** | Open [the playground](https://stellarsight.xyz/playground) and press *Try to break it*: a replayed authorization, a corrupted signature and an inflated echoed price, each run against a freshly signed entry so the outcome is attributable. Two are refused; the third settles **at the original price**, because the echoed price is decoration | 90s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
 | A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
@@ -296,7 +296,7 @@ npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
 npm test           # 200 tests
-npm run verify:api # 46 checks, incl. the stock withBazaar() client against the handlers
+npm run verify:api # 49 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
 npm run load:baseline        # serial vs concurrent settlement, the single-fee-payer "before"
@@ -459,16 +459,22 @@ Each test cites the spec rule it enforces.
 Real hashes produced by this code, with explorer links:
 [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md).
 
-Eighty-five in total, and the split matters: **77 are x402 payments** and 8 are setup and
-cleanup (5 setup, 3 cleanup) — trustlines, the SAC deploy, minting the test asset, and
-returning a legacy balance. Only the payment rows are evidence that the payment path works.
+<!-- evidence:tally — rewritten by `npm run evidence:build`; do not hand-edit the numbers -->
+89 in total, and the split matters: **81 are x402 payments** and 8 are setup and cleanup
+(5 setup, 3 cleanup) — trustlines, the SAC deploy, minting the test asset, and returning a
+legacy balance. Only the payment rows are evidence that the payment path works.
 
-The 77 also split by what produced them, because a settlement count without that is not
-evidence of anything: 55 came from `npm run evidence:batch` (a serial script paying our own
-seller, prefixed `load:`), 20 from the demo loop, and the rest from stock-client conformance
-runs. `npm run evidence:build` recounts that line from the table itself, so it cannot drift
-again. None of it is third-party demand, and nothing here is presented as such — the label
-map is [`docs/status/provenance.json`](docs/status/provenance.json) and the aggregate is
+The 81 also split by what produced them, because a settlement count without that is not
+evidence of anything: 55 from `npm run evidence:batch` (a serial script paying our own
+seller, prefixed `load:`), 20 from the demo loop, 6 from stock-client conformance runs.
+<!-- /evidence:tally -->
+
+Those counts are rewritten from the table itself by `npm run evidence:build`, which the
+nightly runs and commits — the previous version of this paragraph claimed the same thing
+while the script only ever touched `docs/`, so the README drifted three payments behind
+within two days of saying it could not. None of it is third-party demand, and nothing here
+is presented as such — the label map is
+[`docs/status/provenance.json`](docs/status/provenance.json) and the aggregate is
 [`docs/EVIDENCE.md`](docs/EVIDENCE.md).
 
 ## Technical architecture
