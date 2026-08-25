@@ -78,6 +78,12 @@ const PAGES = {
     title: "Load baseline",
     description: "4/4 serial vs 1/10 concurrent on a single fee-payer — the before Tranche 1 has to beat.",
   },
+  "docs/RFP-ALIGNMENT.md": {
+    out: "rfp-alignment",
+    title: "RFP alignment",
+    description:
+      "Every mapped requirement, its status, and the artifact that shows it — including what is not mapped.",
+  },
   "docs/upto-position.md": {
     out: "upto-position",
     title: "Position on upto",

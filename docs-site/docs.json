@@ -42,7 +42,7 @@
       },
       {
         "group": "Upstream",
-        "pages": ["upto-position"]
+        "pages": ["rfp-alignment", "upto-position"]
       }
     ]
   },

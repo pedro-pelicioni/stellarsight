@@ -225,6 +225,10 @@ STELLARSIGHT is built against the RFP *"X402 Facilitator with Bazaar (discovery)
 names the Bazaar discovery layer as the highest-value part of the scope and says it should
 carry the largest share of the budget. Every component maps to a numbered requirement:
 
+**The full map is [`docs/RFP-ALIGNMENT.md`](docs/RFP-ALIGNMENT.md)** — every mapped
+requirement with its status and the artifact behind it, including the six §3.6 acceptance
+criteria and an explicit note about what is *not* mapped. The rows below are the headline.
+
 | RFP req. | In this repo | Status |
 |---|---|---|
 | **3.2 Bazaar discovery layer** — *"the core new capability"*, *"the hardest part of the scope"* | `packages/index` — `/discovery/resources` + `/discovery/search` readable by the stock `@x402/extensions` client, BM25 hybrid ranking with a published formula and per-result `_explain`, auto-cataloging from the discovery extension, soft-drop validation, `EXTENSION-RESPONSES` reporting | Working |
