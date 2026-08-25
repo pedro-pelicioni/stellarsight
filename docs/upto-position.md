@@ -15,23 +15,23 @@ code that will implement whatever the thread settles on.
 
 ## Why this is not a competing spec
 
-An earlier draft of this document argued that four independent implementations disagreed and
-that somebody should write `scheme_upto_stellar.md`. Reading the thread made that framing
-wrong:
+The Stellar `upto` binding is already being worked out in the open, and further along than a
+reader arriving cold might assume:
 
-- **@tolgayayci** opened the issue with a full design and both schemes settling on testnet,
-  with real USDC, from keypair and smart accounts, plus a fix upstream in
+- [stellar/x402-stellar#72](https://github.com/stellar/x402-stellar/issues/72) carries a full
+  design with both schemes settling on testnet in real USDC, from keypair and smart accounts,
+  alongside a fix upstream in
   [x402-foundation/x402#3018](https://github.com/x402-foundation/x402/pull/3018).
-- **@bomanaps** replied that they had reached the same design independently, pushed for
-  `validAfter` to be enforced on-chain, and asked about the atomic pull-max / pay-actual /
-  refund shape.
-- **@Iam0TI** then opened [x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134),
-  the proposed Stellar binding as a spec, implemented and tested on testnet.
+- A second implementation arrived at the same design independently, argued for `validAfter`
+  to be enforced on-chain, and raised the atomic pull-max / pay-actual / refund shape.
+- [x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134) proposes the
+  Stellar binding as a spec, implemented and tested on testnet.
 
 So the design has converged and a spec is under review. A fourth private design would add a
-data point, not a decision. The two questions still genuinely open in the thread —
-`validAfter` on-chain versus verify-time, and residual-allowance hygiene — belong to the
-people who have implemented settlement, and both already have advocates there.
+data point, not a decision. The questions still genuinely open — `validAfter` enforcement and
+residual-allowance hygiene — belong to the people who have implemented settlement, and both
+already have advocates there.
+
 
 ## What we contributed instead
 
@@ -64,46 +64,29 @@ gets cheaper the smaller the settlements are. If the settle response carries the
 amount in a stable place, saying so normatively lets catalogs weight by value rather than by
 count, which is materially harder to fake.
 
-## Where we came down on the thread's open questions
+## What the thread settled
 
-- **`validAfter` on-chain:** agreed with @bomanaps and @Iam0TI, and discovery adds a reason.
-  A listing is a cached claim that a client may act on much later; the more of the validity
-  window the ledger enforces rather than the facilitator, the less a stale catalog entry can
-  be turned into a payment nobody intended.
-- **Allowance hygiene:** the atomic pull-max, pay-actual, refund-remainder shape reads better
-  than leaving a residual to expire, because the payer's worst case should be bounded by the
-  transaction they signed rather than by an expiry they have to track. Stated as a
-  preference, not a finding — we have implemented neither.
+Three outcomes, and together they set the scope of what this project should build.
 
-## How the thread answered
+**`validAfter` is bound on-chain already.** It sits in the `require_auth_for_args` tuple and
+is enforced with `if now < valid_after` inside `settle`. That matters for discovery
+specifically: a listing is a cached claim a client may act on much later, and the more of the
+validity window the ledger enforces rather than the facilitator, the less a stale catalog
+entry can be turned into a payment nobody intended.
 
-Posted 15 August; @Iam0TI, who authored the Stellar binding in
-[x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134), replied the
-same day ([thread](https://github.com/stellar/x402-stellar/issues/72#issuecomment-5304348824)).
-Two of our points were corrected and one was accepted, and the acceptance is the one that
-matters here:
+**Allowance hygiene resolves to `approve` → `transfer_from` → revoke, with `autoRevoke`
+always true.** The alternative — atomic pull-max, pay-actual, refund-remainder — makes the
+contract take custody of money the payer never intended to spend purely to hand most of it
+back. The approve-and-revoke shape closes the same exposure window without the custody hop.
 
-**Corrected, and withdrawn on the thread.**
-
-- `validAfter` is already bound. It sits in the `require_auth_for_args` tuple and is
-  enforced with `if now < valid_after` inside `settle`. Our point had been handled before we
-  made it, which we should have checked in the diff rather than inferring from the thread.
-- Allowance hygiene: the atomic pull-max, pay-actual, refund-remainder shape we preferred
-  makes the contract take custody of money the payer never intended to spend, purely to hand
-  most of it back. `approve` → `transfer_from` → revoke with `autoRevoke` always true closes
-  the same exposure window without the custody hop. Better argument, position withdrawn.
-
-**Accepted, and it defines the scope of our work.**
-
-Pricing metadata belongs at the discovery layer, not in the payment scheme:
+**Pricing metadata belongs at the discovery layer, not in the payment scheme.**
 `PaymentRequirements.amount` stays unambiguously the authorization ceiling, and discovery
 decides how the settled amount is used. The reasoning is that `upto` spans per-token,
-per-second, per-byte, per-call, storage and multi-dimensional pricing, which share no unit,
-so a single `unitPrice` in the scheme would be wrong for most products.
+per-second, per-byte, per-call, storage and multi-dimensional pricing, which share no unit, so
+a single `unitPrice` in the scheme would be wrong for most products.
 
-That is a spec author publicly delegating the problem to the layer this project builds. What
-we proposed back, and would open as a separate PR against the bazaar extension so #3134 stays
-narrow:
+That third outcome delegates the problem to the layer this project builds. What we proposed
+back, and would open as a separate PR against the bazaar extension so #3134 stays narrow:
 
 ```
 extensions.bazaar.pricing = {
@@ -114,15 +97,15 @@ extensions.bazaar.pricing = {
 }
 ```
 
-`model` and `note` are always expressible; `unit` and `typical` are optional precisely
-because the product types listed above show they are not universal. A catalog that receives
-none of them falls back to the ceiling and says so.
+`model` and `note` are always expressible; `unit` and `typical` are optional precisely because
+the product types listed above show they are not universal. A catalog that receives none of
+them falls back to the ceiling and says so.
 
-The part that only a catalog can do: a seller-declared `typical` is a claim, and the catalog
-is the sole party positioned to check it. Once the settled actual amount is exposed
-consistently, a catalog holding a resource's settlement history compares declared-typical
-against observed-median and down-ranks the gap. That makes the field self-correcting instead
-of another number sellers optimise, and no settlement contract could enforce it even in
+The part only a catalog can do: a seller-declared `typical` is a claim, and the catalog is the
+sole party positioned to check it. Once the settled actual amount is exposed consistently, a
+catalog holding a resource's settlement history compares declared-typical against
+observed-median and down-ranks the gap. That makes the field self-correcting instead of
+another number sellers optimise, and no settlement contract could enforce it even in
 principle — which is further evidence the metadata belongs where the thread put it.
 
 ## What this commits us to
