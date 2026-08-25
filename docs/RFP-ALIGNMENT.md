@@ -91,7 +91,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | *"Soroban resource limits. Verify, settle, and any registry operations must stay within per transaction read, write, instruction, and memory limits."* | **Delivered**, measured | `npm run evidence:footprint` → [what a settlement costs the host](EVIDENCE.md#what-a-settlement-costs-the-soroban-host); [ARCHITECTURE §2.7](ARCHITECTURE.md#27-soroban-resource-limits-measured). Worst utilization 1.5%; memory reported as **unobserved** rather than guessed; no on-chain registry exists, so that clause has no operation to bound |
 | SEP-41 / SAC assets | **Delivered** | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) |
-| Trustlines: onboarding and examples must account for the prerequisite (the RFP points at AHA Labs' **Trustline Onboarder** RFP) | **Delivered** for the paths this deployment controls; the ecosystem-level answer is deliberately not ours to build | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) — `npm run setup` issues, deploys and trusts in one idempotent command; the public faucet does the same for a browser visitor |
+| Trustlines: onboarding and examples must account for the prerequisite | **Delivered** for the paths this deployment controls; the ecosystem-level answer is deliberately not ours to build | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) — `npm run setup` issues, deploys and trusts in one idempotent command; the public faucet does the same for a browser visitor |
 
 ---
 

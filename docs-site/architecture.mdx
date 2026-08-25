@@ -273,8 +273,8 @@ paths it controls — `npm run setup` issues `SXT`, deploys its SAC and adds the
 one idempotent command, and the public faucet funds a browser visitor's throwaway account
 the same way — which is why the quickstart reaches a settled payment without a separate
 onboarding step. It is worth being explicit that this is a *local* answer to a general
-problem: the RFP points at **AHA Labs' Trustline Onboarder RFP** as the ecosystem-level
-solution, and when that lands the right move is to route buyers to it rather than to keep
+problem. There is separate ecosystem-level work funded to solve trustline onboarding
+properly, and when it lands the right move is to route buyers to it rather than to keep
 growing a faucet. Nothing in the payment path assumes our version.
 
 Amounts are integer strings in atomic units, 7 decimals. In x402 **v2** the price field on
@@ -302,9 +302,7 @@ The ceiling is therefore set to **500,000 stroops (0.05 XLM)**: 8.7× the observ
 simulation, still small enough to catch a genuinely runaway transaction, which is what a
 ceiling is for. The derivation is in the source next to the constant
 (`apps/facilitator/src/server.mjs`), so a reviewer can audit the reasoning and not just the
-number. Independently, the Vellar submission reports hitting the same 50,000 default as a
-hard blocker for policy-governed payments and raising it to the same 500,000 — two projects
-converging on the number from opposite directions.
+number.
 
 ### 2.5 Replay and expiry are enforced on-chain
 
