@@ -91,7 +91,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | *"Soroban resource limits. Verify, settle, and any registry operations must stay within per transaction read, write, instruction, and memory limits."* | **Delivered**, measured | `npm run evidence:footprint` → [what a settlement costs the host](EVIDENCE.md#what-a-settlement-costs-the-soroban-host); [ARCHITECTURE §2.7](ARCHITECTURE.md#27-soroban-resource-limits-measured). Worst utilization 1.5%; memory reported as **unobserved** rather than guessed; no on-chain registry exists, so that clause has no operation to bound |
 | SEP-41 / SAC assets | **Delivered** | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) |
-| Trustlines: onboarding and examples must account for the prerequisite | **Delivered** for the paths this deployment controls; the ecosystem-level answer is deliberately not ours to build | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) — `npm run setup` issues, deploys and trusts in one idempotent command; the public faucet does the same for a browser visitor |
+| Trustlines: onboarding and examples must account for the prerequisite (§3.5 points at **AHA Labs' Trustline Onboarder RFP**) | **Delivered** for the paths this deployment controls; the ecosystem-level answer is deliberately not ours to build | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) — `npm run setup` issues, deploys and trusts in one idempotent command; the public faucet does the same for a browser visitor |
 
 ---
 
@@ -125,7 +125,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 
 | Deliverable | Status | Evidence |
 |---|---|---|
-| §5.4 Author `scheme_upto_stellar.md` | **Position** — we propose implementing #3134 rather than authoring a fourth spec. If the TSC prefers that we author one, **T2 absorbs it at no change in cost** | [upto-position.md](upto-position.md) |
+| §5.4 Author `scheme_upto_stellar.md` | **T2, committed on either branch.** Preference is to implement whatever the open proposals converge on rather than add a fourth draft — but **if neither has landed by the end of Tranche 2 we author and submit it ourselves** through the x402 spec process, at no change in cost. The named artifact exists whichever way the upstream discussion goes | [upto-position.md](upto-position.md) · ARCHITECTURE §10 |
 | §5.7 Role-based developer guide with a seller path, a buyer/agent path and an **operator path** | **Delivered**, all three | [seller](QUICKSTART-SELLER.md) · [agent](../apps/agent/README.md) · [operator](DEPLOY.md) |
 | §5.7 Contributions to the Stellar Developer Docs | **T2** | ARCHITECTURE §10 |
 | §5.8 Two end-to-end example integrations | **Delivered** | `apps/seller` — a paid API with three real routes that announces itself into the catalog; `apps/agent` — an MCP agent that discovers and pays with no prior integration. Both run in CI |

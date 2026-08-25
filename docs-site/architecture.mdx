@@ -273,9 +273,10 @@ paths it controls — `npm run setup` issues `SXT`, deploys its SAC and adds the
 one idempotent command, and the public faucet funds a browser visitor's throwaway account
 the same way — which is why the quickstart reaches a settled payment without a separate
 onboarding step. It is worth being explicit that this is a *local* answer to a general
-problem. There is separate ecosystem-level work funded to solve trustline onboarding
-properly, and when it lands the right move is to route buyers to it rather than to keep
-growing a faucet. Nothing in the payment path assumes our version.
+problem: the RFP points at **AHA Labs' Trustline Onboarder RFP** as the ecosystem-level
+solution, and when that lands the right move is to route buyers to it rather than to keep
+growing a faucet. Nothing in the payment path assumes our version, and none of the
+onboarding here is load-bearing for the payment path itself.
 
 Amounts are integer strings in atomic units, 7 decimals. In x402 **v2** the price field on
 `PaymentRequirements` is `amount`; the v1 name `maxAmountRequired` fails
@@ -1060,7 +1061,7 @@ sponsor-account balance alerting before mainnet.
 
 ### 7.4 Residual risk, stated plainly
 
-Bus factor of one, no external audit yet, testnet only, and a single shared write token that
+One author on the commit history so far (the award funds three engineers full-time, scopes split in the submission), no external audit yet, testnet only, and a single shared write token that
 is adequate for a demo catalog and inadequate for a public index with third-party sellers.
 Each has a named mitigation and a tranche.
 
@@ -1152,7 +1153,7 @@ all permissive, nothing unknown — is published in
 | | Wire shape locked by golden tests on all three surfaces | §3.2 |
 | | Nightly stock-client conformance in public CI | §5.3 |
 | **T2** ($26,700, ~12 weeks) | Discovery-side requirements into the open `upto` spec, coordinated through the x402 **Technical Steering Committee** | §6.1 |
-| | **§5.4** — we propose implementing #3134 rather than authoring a fourth `scheme_upto_stellar.md`; if the TSC prefers that we author one, T2 absorbs it at no change in cost | §6.1 |
+| | **§5.4** — implement whatever the open proposals converge on rather than fork them; **if neither has landed by the end of this tranche we author and submit `scheme_upto_stellar.md` ourselves**, so the RFP's named artifact exists on either branch | §6.1 |
 | | `upto` implemented as standardized + a published interop report | §6.3 |
 | | Metered pricing in the catalog: ceiling vs price, budget filters, value-weighted ranking | §6.3 |
 | | Monitoring plan becomes a running system with alerts | §8 |

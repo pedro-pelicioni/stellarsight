@@ -117,8 +117,13 @@ amount, or move funds it was not authorized to move.
 
 ## Residual risk, stated plainly
 
-- **Bus factor 1.** One maintainer. Mitigated by Apache-2.0 licensing end to end, public CI
-  anyone can run, and the Tranche 3 handoff deliverable (named maintainer, runbooks).
+- **Bus factor.** Everything in this repository up to now was written by one person, before
+  any funding, and that is the honest description of today's commit history. The award funds
+  **three engineers full-time** — the scopes are split in the submission, with the Soroban
+  contract and the seller-facing SDK/CLI, and the hosted agent surface, each owned by a named
+  engineer other than the original author. Until that starts, the standing mitigations are
+  what they were: Apache-2.0 end to end so nothing here is trapped, public CI anyone can run,
+  and the Tranche 3 handoff deliverable (named maintainer, runbooks).
 - **No external audit yet.** Scheduled through the SCF Audit Bank in Tranche 3; the audit
   fee is excluded from the budget per the rules.
 - **Testnet only.** No real funds are at risk today. Mainnet is gated behind the audit
