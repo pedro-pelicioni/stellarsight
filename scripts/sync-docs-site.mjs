@@ -41,10 +41,16 @@ const PAGES = {
     title: "Agent & MCP",
     description: "Discover and pay for services from an agent: the MCP server's four tools and the CLI.",
   },
+  "docs/DEPLOY.md": {
+    out: "guides/operator",
+    title: "Operator guide",
+    description:
+      "Run your own facilitator and Bazaar: deploy topology, environment, catalog modes, rate limits, and curl verification.",
+  },
   "docs/THREAT-MODEL.md": {
     out: "security/threat-model",
     title: "Threat model",
-    description: "Twelve threats, each mapped to the control that answers it and the test that proves it.",
+    description: "Thirteen threats, each mapped to the control that answers it and the test that proves it.",
   },
   "docs/MONITORING.md": {
     out: "security/monitoring",

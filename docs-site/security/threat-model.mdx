@@ -1,6 +1,6 @@
 ---
 title: "Threat model"
-description: "Twelve threats, each mapped to the control that answers it and the test that proves it."
+description: "Thirteen threats, each mapped to the control that answers it and the test that proves it."
 ---
 
 Scope: the STELLARSIGHT facilitator, the Bazaar catalog and the agent-facing surfaces, as
@@ -50,6 +50,7 @@ alerts firing against live thresholds ([MONITORING.md](/security/monitoring)).
 | T10 | **Durable-store compromise** — a record is written straight into Redis, bypassing validation | Only the **post-validation** record is persisted, by both writers (settle path and announce path). The store is never a validation bypass | `packages/index/src/store.mjs` accepts what the catalog stored, not the request body |
 | T11 | **Store outage** | Read-only degradation: the catalog serves the seeded corpus and `/discovery/health` reports `mode`, `writable` and the store error rather than 500-ing | `test/store-transport.test.mjs`; degraded path exercised in `verify:api` |
 | T12 | **Silent spec drift** — the wire format stops matching the spec and nobody notices | Stock-client conformance: unmodified `@x402/fetch` and `withBazaar()` drive the real endpoints; this caught a real v1/v2 drift in our own seller | `npm run verify:conformance` (settled hashes published; needs a funded payer, so it runs per release); `npm run verify:api` (49 checks) runs in CI on every push and on a nightly schedule |
+| T13 | **Front-running the settlement** — an observer sees a payment payload in flight and profits by submitting ahead of it, or by reordering | The buyer's authorization entry binds recipient, asset, amount, nonce and expiry ledger, and is valid **only** for that exact invocation, so a payload copied out of the mempool cannot be redirected, repriced or usefully raced. There is no auction, no state-dependent price and no on-chain ordering advantage to capture in a fixed-price SEP-41 `transfer` | `scripts/verify-rejections.mjs` — *"a tampered echoed price/recipient is refused before settlement"*, audited against the live stack nightly; the ordering argument is in the note below |
 
 
 ### Note on T7: why there is now a facilitator-side nonce memory
@@ -79,6 +80,34 @@ The remaining failure mode is a false positive from a corrupted store, so every 
 unparseable value is treated as *not seen* (`apps/facilitator/src/settled-nonces.mjs`), as
 is an unreachable store. The layer fails open in every direction: worst case the caller
 gets the same opaque code it got before.
+
+
+### Note on T13: why ordering is not an attack surface here
+
+Front-running is a real threat class in payments, and the honest reason it does not bite
+here is structural rather than defensive — worth writing down, because "we are not
+vulnerable" is a claim a reviewer should be able to check rather than accept.
+
+An attacker who observes a payment payload in flight holds a signed authorization entry
+that names a recipient, an asset, an amount, a nonce and an expiry ledger. Submitting it
+first does not help: it settles the payment the buyer already authorized, to the seller the
+buyer already chose, for the amount the buyer already agreed — at the attacker's own
+expense if they sponsor the fee. Altering any bound field invalidates the signature, which
+is the rejection `verify-rejections` audits by name. The nonce is consumed on chain
+(T7), so it cannot be replayed behind the original either.
+
+What normally makes ordering valuable is absent by construction: there is no auction, no
+slippage, no price that depends on the order of execution, and no pool position to take
+ahead of someone. A `transfer` at a price fixed in the 402 challenge pays the same amount
+to the same account regardless of when in the ledger it lands.
+
+**What this does not cover**, stated so the row is not read as broader than it is: a
+malicious or failing facilitator can delay a settlement or decline to submit it at all,
+and it can observe who is paying whom. That is censorship and metadata exposure, not
+front-running, and the answer to it is the same one the whole design rests on — the
+facilitator is non-custodial and replaceable, so a buyer who is being stalled can settle
+the same payment through a different one. Both are named again under residual risk when
+this becomes a mainnet question.
 
 
 ## Non-custodial by construction

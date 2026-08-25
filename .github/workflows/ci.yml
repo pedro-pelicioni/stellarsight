@@ -80,3 +80,14 @@ jobs:
       # so a network blip degrades the data rather than the run.
       - name: Build the site
         run: npm run build --workspace apps/web
+
+      # docs-site/ is a projection of the canonical markdown, never a hand-maintained copy
+      # — scripts/sync-docs-site.mjs opens by saying so. Nothing enforced it, so a run that
+      # rewrote docs/EVIDENCE.md and skipped the projection left the published docs site
+      # quoting stale numbers: the precise drift the projection exists to prevent. Re-run
+      # it and fail on any diff. Either the committed pages already match their sources, or
+      # the diff names the sync someone forgot.
+      - name: Docs site matches its sources
+        run: |
+          npm run docs:sync
+          git diff --exit-code -- docs-site/

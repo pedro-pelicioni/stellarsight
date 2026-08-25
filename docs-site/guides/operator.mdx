@@ -1,14 +1,17 @@
-# Deploying STELLARSIGHT — the operator path
+---
+title: "Operator guide"
+description: "Run your own facilitator and Bazaar: deploy topology, environment, catalog modes, rate limits, and curl verification."
+---
 
 This is the operator guide: everything needed to run your **own** facilitator and Bazaar,
 from first deploy to proving the deployment answers correctly. Nothing here is special to
 the instance at `stellarsight.xyz` — that instance is this repository deployed by these
-exact steps, which is what makes the [self-hosting argument](ARCHITECTURE.md#93-self-hosting)
+exact steps, which is what makes the [self-hosting argument](/architecture#93-self-hosting)
 checkable rather than rhetorical.
 
 The other two paths: a seller wiring a paid API into an existing facilitator wants the
-[seller quickstart](QUICKSTART-SELLER.md); a buyer or agent wants the
-[agent and MCP guide](../apps/agent/README.md).
+[seller quickstart](/guides/seller); a buyer or agent wants the
+[agent and MCP guide](/guides/agent).
 
 The repo deploys as a **single Vercel project**: the Vite site in `apps/web` becomes the
 static output, and the `.mjs` files under `api/` become Node.js Vercel Functions: four

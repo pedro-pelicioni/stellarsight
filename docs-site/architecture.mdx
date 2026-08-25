@@ -373,6 +373,47 @@ flowchart LR
 own sequence number, round-robin leased, with sequence-drift quarantine and reconciliation,
 targeting 25–50 concurrent settlements with zero sequence-number failures.
 
+### 2.7 Soroban resource limits, measured
+
+A settle is **one** `invokeHostFunction` calling `transfer` on a SEP-41 SAC, carrying a
+single authorization entry with no sub-invocations, wrapped in a fee bump. There is no
+on-chain registry anywhere in this design — the catalog is facilitator-side, in Redis or in
+memory — so that one contract call is the entire on-chain footprint of a payment, and the
+registry-operations clause has no on-chain operation to bound.
+
+Fee is a price, not a resource. A transaction can sit comfortably under the 500,000-stroop
+ceiling of 2.4 and still be one refactor away from the instruction limit, so the resources
+are measured rather than inferred from cost. `npm run evidence:footprint` reads the resource
+declaration back out of a settled transaction's own envelope and compares it against the
+network's live `ConfigSetting` ledger entries — usage fetched, limits fetched, neither side
+typed — and the nightly re-runs it against the payment it has just settled, writing
+[`docs/status/soroban-footprint.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/soroban-footprint.json).
+
+The settlement measured on 2026-08-25 (ledger 4,323,937; the artifact carries the current
+one):
+
+| Resource | Used | Per-transaction limit | Utilization |
+|---|---|---|---|
+| Instructions | 775,728 | 400,000,000 | 0.19% |
+| Disk read bytes | 376 | 200,000 | 0.19% |
+| Write bytes | 308 | 132,096 | 0.23% |
+| Read ledger entries | 2 | 200 | 1.0% |
+| Write ledger entries | 3 | 200 | 1.5% |
+| Memory | not observable | 41,943,040 (40 MiB) | — |
+
+The binding constraint is ledger entries at 1.5%, about 67× headroom. Memory is the one
+limit with no measurement behind it: peak host memory appears in neither the transaction
+envelope nor the result meta, so the artifact records the ceiling and states that usage is
+unobserved rather than inventing a figure to fill the row.
+
+Two consequences worth stating plainly. First, a payment that did exceed a per-transaction
+limit would fail during the simulation `@x402/stellar` performs inside `/verify` — before
+any money moves — so the failure mode is a rejection carrying a machine-readable reason,
+not a lost payment or a settlement stuck half-done. Second, because the measurement runs
+every night behind a 25% gate, a change that alters the settle path's shape — a multi-hop
+transfer, a wrapper contract, an on-chain registry write — fails the nightly job instead of
+quietly eating the margin. The number above only moves if that shape moves.
+
 ---
 
 ## 3. The Bazaar: the facilitator-side catalog
@@ -839,11 +880,55 @@ Three things, none of which is a fourth spec:
 Building the contract before mainnet is deliberate: it must be inside the audit scope, and
 the audit gates mainnet.
 
+### 6.4 `batch-settlement` and `auth-capture` are deferred, not foreclosed
+
+Both are named upstream as later work: `batch-settlement` as phase-two, `auth-capture` as
+deferred on the grounds that `upto` already covers the metered case. Neither is in scope
+here. The question an architecture review should ask is not whether they are built but
+whether building them later means undoing something — so, concretely, what would have to
+change.
+
+**Nothing in the settlement path.** The facilitator is
+`new x402Facilitator().register(NETWORK, stellarScheme)`
+(`apps/facilitator/src/server.mjs`): `exact` is a registered entry in a plugin registry, not
+a branch in the settle handler. A second scheme is a second `register()` call. The two
+literal `"exact"` strings near that code are not scheme dispatch — one is the default used
+when projecting a payment into the catalog if the requirements omit a scheme, the other is
+the static `/supported` payload used only when `getSupported()` throws.
+
+**Nothing in the catalog.** `offeringKeyOf()` keys an offering by the content that makes it
+distinct — scheme, network, asset, `payTo`, and a canonicalized `extra`
+(`packages/index/src/index.mjs:131`) — so re-seeing an offering updates it in place while a
+genuinely different one is appended beside it, and `?scheme=` matches a record if **any** of
+its offerings carries that scheme (`packages/index/src/index.mjs:374`). A listing that gains
+a second offering under a batched or capture-style scheme becomes discoverable without a
+migration, a schema change or a re-announce. That multi-offering shape is already load-
+bearing for the two `upto` profiles §6.1 argues for; batching and capture inherit it.
+
+**No custody to unwind.** A settlement holds nothing: one `transfer`, one transaction, one
+authorization entry (§2.7), non-custodial by construction (§1.2). `auth-capture` needs a
+hold-then-capture lifecycle — that is a lifecycle to *add*, with no escrow assumption to
+remove first. `batch-settlement` needs several payments inside one transaction, and the
+per-transaction budget the current settle path consumes is 1.5% of the tightest limit
+(§2.7), so the room is measured rather than hoped for.
+
+**What would actually need editing**, named so the claim is checkable rather than
+reassuring: two consumer surfaces, neither of them the settlement path. `apps/agent/src/pay.mjs:364`
+filters the 402 challenge's `accepts` to `scheme === 'exact'`, so the example agent would
+need to learn the second scheme before it could pay with it; and
+`packages/index/src/settlements.mjs:146` stamps every row of the public settlement feed as
+`exact`, which would have to become the settled payment's real scheme. Both are one-line
+truths about today's single-scheme deployment, and both are in the display layer.
+
+Stated positively, because silence here reads as not having considered it: neither
+`batch-settlement` nor `auth-capture` is foreclosed by anything in this architecture, and
+the work each would require is additive.
+
 ---
 
 ## 7. Security and trust model
 
-The full analysis is [THREAT-MODEL.md](/security/threat-model) — twelve threats, each with the
+The full analysis is [THREAT-MODEL.md](/security/threat-model) — thirteen threats, each with the
 control that answers it and the test that proves it. Summary:
 
 ### 7.1 Trust boundaries
@@ -870,7 +955,7 @@ control that answers it and the test that proves it. Summary:
 | Ranking manipulation | prior capped at 0.25; seeds pinned to 0 settlements | Gameable by real cheap settlements; stated |
 | Store used to bypass validation | only post-validation records persisted | By construction |
 | Store outage | read-only degradation + health reporting | Tested |
-| Silent spec drift | stock-client conformance vs the live stack; 46 API checks + suite nightly in CI | Caught a real bug already |
+| Silent spec drift | stock-client conformance vs the live stack; 49 API checks + suite nightly in CI | Caught a real bug already |
 
 ### 7.3 Key management
 
@@ -1009,7 +1094,7 @@ run, on both Node versions the project claims to support. Tranche 3 funds four m
 post-launch operations and a handoff document naming the maintainer, the escalation path and
 the responsibility boundary — because a service that dies when the grant ends is what the
 RFP is trying to avoid. The failure mode the RFP screens for is drift as the spec moves, so
-the conformance cadence is scheduled to continue past the grant window: CI runs the 46
+the conformance cadence is scheduled to continue past the grant window: CI runs the 49
 API-conformance checks, the full test suite and the search-quality regression gate nightly
 on Node 22/24, and the end-to-end settled-payment conformance (`npm run verify:conformance`)
 runs against the live stack.
@@ -1025,7 +1110,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 205 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 208 tests, 66 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 

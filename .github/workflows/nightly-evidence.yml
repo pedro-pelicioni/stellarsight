@@ -1,6 +1,6 @@
 # One real settled payment a night, against the deployed stack, published as evidence.
 #
-# CI already runs the tests, the 46 API-conformance checks and the search-quality gate
+# CI already runs the tests, the 49 API-conformance checks and the search-quality gate
 # nightly — but none of those move money, and the claim this project is judged on is that
 # an unmodified x402 client can pay a real resource. So this job does exactly that, once a
 # night, against https://stellarsight.xyz rather than a stack booted inside the runner:
@@ -59,6 +59,14 @@ jobs:
             --emit \
             --append-txdoc "conformance: nightly hosted ($(date -u +%Y-%m-%d))"
 
+      # The settlement that just happened, read back off the ledger: what it cost the
+      # Soroban host in instructions, read/write bytes and ledger entries, against the
+      # network's live per-transaction limits. Measured nightly rather than argued once,
+      # because the number only moves if the settle path's shape changes — and if it ever
+      # does, this is where that shows up.
+      - name: Measure the settlement's Soroban footprint
+        run: npm run evidence:footprint -- --emit
+
       # Same run, the negative paths: every documented rejection, expected vs observed.
       - name: Audit the rejection paths
         run: |
@@ -68,12 +76,19 @@ jobs:
             --index https://stellarsight.xyz \
             --emit
 
-      - name: Rebuild the evidence page
-        run: npm run evidence:build
+      # evidence:build rewrites README.md, docs/TESTNET-TXS.md and docs/EVIDENCE.md.
+      # docs-site/ is a projection of those same files, so it has to be re-run in the same
+      # breath or the published documentation site keeps quoting the previous night's
+      # numbers — the drift the projection was introduced to prevent.
+      - name: Rebuild the evidence page and re-project the docs site
+        run: |
+          npm run evidence:build
+          npm run docs:sync
 
       # Commit rather than upload an artifact: apps/web reads docs/TESTNET-TXS.md at build
-      # time and the evidence page is served from the repo, so an artifact would leave both
-      # public surfaces stale. `[skip ci]` stops the push from re-triggering CI.
+      # time, the evidence page is served from the repo, and docs-site/ is what the
+      # documentation site publishes — so an artifact would leave all three public
+      # surfaces stale. `[skip ci]` stops the push from re-triggering CI.
       #
       # If branch protection refuses the bot, this step fails and the evidence is still in
       # the job summary and the run log — the settlement itself already happened on chain.
@@ -82,11 +97,11 @@ jobs:
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if git diff --quiet -- README.md docs/; then
+          if git diff --quiet -- README.md docs/ docs-site/; then
             echo "no evidence changed — nothing to commit"
             exit 0
           fi
-          git add README.md docs/TESTNET-TXS.md docs/EVIDENCE.md docs/status/
+          git add README.md docs/TESTNET-TXS.md docs/EVIDENCE.md docs/status/ docs-site/
           HASH=$(node -p "require('./docs/status/conformance.json').txHash.slice(0,8)")
           git commit -m "chore(evidence): nightly settled payment ${HASH} [skip ci]"
           git pull --rebase origin "${GITHUB_REF_NAME}"

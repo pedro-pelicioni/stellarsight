@@ -21,7 +21,7 @@
       },
       {
         "group": "Guides",
-        "pages": ["guides/seller", "guides/agent"]
+        "pages": ["guides/seller", "guides/agent", "guides/operator"]
       },
       {
         "group": "Reference",
