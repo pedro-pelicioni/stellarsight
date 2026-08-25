@@ -281,7 +281,9 @@ start to finish with no web forms and no API keys.
 **2. No third-party facilitator.** The facilitator is **self-hosted** on the Apache-2.0
 package. That removes any dependency on the OpenZeppelin Relayer / OZ Channels — which is
 **AGPL-3.0-or-later**, and therefore unusable by any project needing a permissive license —
-while demonstrating the self-facilitation path the RFP asks for in 3.1.
+while demonstrating the self-facilitation path the RFP asks for in 3.1. `npm run
+audit:licenses` proves the absence rather than asserting it: 191 production packages, all
+permissive, zero unknown, and CI fails the build if that ever stops being true.
 
 The `FEEPAYER` account sponsors network fees, so the paying agent needs **zero XLM**.
 

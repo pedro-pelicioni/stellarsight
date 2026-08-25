@@ -1,0 +1,1180 @@
+{
+  "kind": "licenses",
+  "generatedAt": "2026-08-25T16:35:39.387Z",
+  "commit": "c06a509",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "scope": "production dependency tree (`npm ls --omit=dev --all`), all workspaces",
+  "scopeNote": "Dev dependencies are excluded because they are not redistributed. Nothing in this repository ships a dev dependency to a user.",
+  "summary": {
+    "total": 191,
+    "permissive": 191,
+    "weakCopyleft": 0,
+    "strongCopyleft": 0,
+    "unknown": 0
+  },
+  "byLicense": {
+    "MIT": 154,
+    "Apache-2.0": 16,
+    "ISC": 12,
+    "BSD-3-Clause": 4,
+    "BSD-2-Clause": 3,
+    "0BSD": 1,
+    "Unlicense": 1
+  },
+  "strongCopyleft": [],
+  "weakCopyleft": [],
+  "unknown": [],
+  "packages": [
+    {
+      "name": "@adraffy/ens-normalize",
+      "version": "1.11.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@hono/node-server",
+      "version": "2.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@modelcontextprotocol/sdk",
+      "version": "1.30.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/ciphers",
+      "version": "1.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/curves",
+      "version": "1.9.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/curves",
+      "version": "1.9.7",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/ed25519",
+      "version": "3.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "1.8.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@redis/bloom",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@redis/client",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@redis/json",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@redis/search",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@redis/time-series",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@remix-run/router",
+      "version": "1.23.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@scure/base",
+      "version": "1.2.6",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@scure/bip32",
+      "version": "1.7.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@scure/bip39",
+      "version": "1.6.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "@signinwithethereum/siwe",
+      "version": "4.2.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@signinwithethereum/siwe-parser",
+      "version": "4.2.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@stellar/js-xdr",
+      "version": "4.0.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@stellar/stellar-sdk",
+      "version": "16.2.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@stellarsight/agent",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "classification": "permissive",
+      "workspace": true
+    },
+    {
+      "name": "@stellarsight/express",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "classification": "permissive",
+      "workspace": true
+    },
+    {
+      "name": "@stellarsight/index",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "classification": "permissive",
+      "workspace": true
+    },
+    {
+      "name": "@stellarsight/web",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "classification": "permissive",
+      "workspace": true
+    },
+    {
+      "name": "@x402/core",
+      "version": "2.21.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@x402/express",
+      "version": "2.21.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@x402/extensions",
+      "version": "2.21.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@x402/fetch",
+      "version": "2.21.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "@x402/stellar",
+      "version": "2.21.0",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "abitype",
+      "version": "1.2.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "accepts",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "agent-base",
+      "version": "6.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "apg-js",
+      "version": "4.4.0",
+      "license": "BSD-2-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "asynckit",
+      "version": "0.4.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "axios",
+      "version": "1.18.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "base32.js",
+      "version": "0.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "base64-js",
+      "version": "1.5.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "bignumber.js",
+      "version": "11.1.5",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "body-parser",
+      "version": "2.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "buffer",
+      "version": "6.0.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "bytes",
+      "version": "3.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "call-bound",
+      "version": "1.0.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "chalk",
+      "version": "4.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "cliui",
+      "version": "8.0.1",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "cluster-key-slot",
+      "version": "1.1.2",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "color-convert",
+      "version": "2.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "color-name",
+      "version": "1.1.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "combined-stream",
+      "version": "1.0.8",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "commander",
+      "version": "14.0.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "concurrently",
+      "version": "9.2.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "content-disposition",
+      "version": "1.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "content-type",
+      "version": "1.0.5",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "content-type",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "cookie",
+      "version": "0.7.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "cookie-signature",
+      "version": "1.2.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "cors",
+      "version": "2.8.6",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "debug",
+      "version": "4.4.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "delayed-stream",
+      "version": "1.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "depd",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "dotenv",
+      "version": "17.4.2",
+      "license": "BSD-2-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "dunder-proto",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ee-first",
+      "version": "1.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "emoji-regex",
+      "version": "8.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "encodeurl",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "es-errors",
+      "version": "1.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "es-object-atoms",
+      "version": "1.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "es-set-tostringtag",
+      "version": "2.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "escalade",
+      "version": "3.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "escape-html",
+      "version": "1.0.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "etag",
+      "version": "1.8.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "eventemitter3",
+      "version": "5.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "eventsource",
+      "version": "3.0.7",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "eventsource",
+      "version": "4.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "eventsource-parser",
+      "version": "3.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "express",
+      "version": "5.2.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "express-rate-limit",
+      "version": "8.6.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.5",
+      "license": "BSD-3-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "feaxios",
+      "version": "0.0.23",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "finalhandler",
+      "version": "2.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "follow-redirects",
+      "version": "1.16.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "form-data",
+      "version": "4.0.6",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "forwarded",
+      "version": "0.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "fresh",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "function-bind",
+      "version": "1.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "get-caller-file",
+      "version": "2.0.5",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "get-proto",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "gopd",
+      "version": "1.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "has-flag",
+      "version": "4.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "has-tostringtag",
+      "version": "1.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "hasown",
+      "version": "2.0.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "hono",
+      "version": "4.13.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "http-errors",
+      "version": "2.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "https-proxy-agent",
+      "version": "5.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "iconv-lite",
+      "version": "0.7.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ieee754",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "inherits",
+      "version": "2.0.4",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "ip-address",
+      "version": "10.4.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ipaddr.js",
+      "version": "1.9.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "is-fullwidth-code-point",
+      "version": "3.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "is-promise",
+      "version": "4.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "is-retry-allowed",
+      "version": "3.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "isexe",
+      "version": "2.0.0",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "isows",
+      "version": "1.0.7",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "jose",
+      "version": "5.10.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "jose",
+      "version": "6.2.8",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "json-schema-typed",
+      "version": "8.0.2",
+      "license": "BSD-2-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "media-typer",
+      "version": "1.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "merge-descriptors",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.52.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.54.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "mime-types",
+      "version": "2.1.35",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "mime-types",
+      "version": "3.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "ms",
+      "version": "2.1.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "negotiator",
+      "version": "1.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "object-assign",
+      "version": "4.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "object-inspect",
+      "version": "1.13.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "on-finished",
+      "version": "2.4.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "once",
+      "version": "1.4.0",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "ox",
+      "version": "0.14.33",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "parseurl",
+      "version": "1.3.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "path-key",
+      "version": "3.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "path-to-regexp",
+      "version": "8.4.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "picocolors",
+      "version": "1.1.1",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "pkce-challenge",
+      "version": "5.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "proxy-addr",
+      "version": "2.0.7",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "proxy-from-env",
+      "version": "2.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "qs",
+      "version": "6.15.3",
+      "license": "BSD-3-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "range-parser",
+      "version": "1.3.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "raw-body",
+      "version": "3.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "react",
+      "version": "18.3.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "react-dom",
+      "version": "18.3.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "react-router",
+      "version": "6.30.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "react-router-dom",
+      "version": "6.30.4",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "redis",
+      "version": "6.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "require-directory",
+      "version": "2.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "router",
+      "version": "2.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "rxjs",
+      "version": "7.8.2",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "safer-buffer",
+      "version": "2.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "scheduler",
+      "version": "0.23.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "send",
+      "version": "1.2.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "serve-static",
+      "version": "2.2.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "setprototypeof",
+      "version": "1.2.0",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "shell-quote",
+      "version": "1.9.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "side-channel",
+      "version": "1.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "side-channel-list",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "side-channel-map",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "side-channel-weakmap",
+      "version": "1.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "smol-toml",
+      "version": "1.7.1",
+      "license": "BSD-3-Clause",
+      "classification": "permissive"
+    },
+    {
+      "name": "statuses",
+      "version": "2.0.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "string-width",
+      "version": "4.2.3",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "supports-color",
+      "version": "7.2.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "supports-color",
+      "version": "8.1.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "toidentifier",
+      "version": "1.0.1",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "tree-kill",
+      "version": "1.2.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "license": "0BSD",
+      "classification": "permissive"
+    },
+    {
+      "name": "tweetnacl",
+      "version": "1.0.3",
+      "license": "Unlicense",
+      "classification": "permissive"
+    },
+    {
+      "name": "type-is",
+      "version": "2.1.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "license": "Apache-2.0",
+      "classification": "permissive"
+    },
+    {
+      "name": "uint8array-extras",
+      "version": "1.5.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "unpipe",
+      "version": "1.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "vary",
+      "version": "1.1.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "viem",
+      "version": "2.55.11",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "which",
+      "version": "2.0.2",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "wrap-ansi",
+      "version": "7.0.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "wrappy",
+      "version": "1.0.2",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "ws",
+      "version": "8.21.0",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "y18n",
+      "version": "5.0.8",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "yargs",
+      "version": "17.7.2",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "yargs-parser",
+      "version": "21.1.1",
+      "license": "ISC",
+      "classification": "permissive"
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "license": "MIT",
+      "classification": "permissive"
+    },
+    {
+      "name": "zod-to-json-schema",
+      "version": "3.25.2",
+      "license": "ISC",
+      "classification": "permissive"
+    }
+  ]
+}

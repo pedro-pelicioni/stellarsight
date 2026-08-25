@@ -197,6 +197,8 @@ const rejections = readEvidence('rejections');
 const provenance = readEvidence('provenance');
 const nightly = readEvidence('nightly');
 const upstreamE2e = readEvidence('upstream-e2e');
+const footprint = readEvidence('soroban-footprint');
+const licenses = readEvidence('licenses');
 
 const labelCounts = {};
 for (const meta of Object.values(provenance?.hashes ?? {})) {
@@ -431,6 +433,70 @@ if (nightly?.runs?.length) {
   for (const r of nightly.runs.slice(-14).reverse()) {
     w(`| ${r.date} | ${r.txHash ? `[\`${String(r.txHash).slice(0, 12)}…\`](https://stellar.expert/explorer/testnet/tx/${r.txHash})` : '—'} | ${r.elapsedMs ?? '—'}ms | ${r.runUrl ? `[log](${r.runUrl})` : '—'} |`);
   }
+  w();
+}
+
+/* ── soroban footprint ────────────────────────────────────────────────────── */
+
+if (footprint?.used && footprint?.limits) {
+  w('## What a settlement costs the Soroban host');
+  w();
+  w('Read back off the ledger from the transaction named below, and compared against the');
+  w("network's live `ConfigSetting` entries — both sides fetched, neither typed. Regenerate");
+  w('with `npm run evidence:footprint -- --emit`; the nightly re-measures the payment it has');
+  w('just settled.');
+  w();
+  w('| Resource | Used | Per-transaction limit | Utilization |');
+  w('|---|---|---|---|');
+  const rows = [
+    ['Instructions', 'instructions', 'txMaxInstructions'],
+    ['Disk read bytes', 'diskReadBytes', 'txMaxDiskReadBytes'],
+    ['Write bytes', 'writeBytes', 'txMaxWriteBytes'],
+    ['Read ledger entries', 'diskReadEntries', 'txMaxDiskReadEntries'],
+    ['Write ledger entries', 'writeLedgerEntries', 'txMaxWriteLedgerEntries'],
+  ];
+  const n = (v) => (typeof v === 'number' ? v.toLocaleString('en-US') : '—');
+  for (const [label, usedKey, limitKey] of rows) {
+    const pct = footprint.utilizationPercent?.[usedKey];
+    w(`| ${label} | ${n(footprint.used[usedKey])} | ${n(footprint.limits[limitKey])} | ${pct === undefined || pct === null ? '—' : `${pct}%`} |`);
+  }
+  w(`| Memory | not observable | ${n(footprint.limits.txMemoryLimitBytes)} | — |`);
+  w();
+  w(
+    `Worst utilization **${footprint.worstUtilizationPercent}%** — about ${footprint.headroomFactor}× headroom ` +
+      `against the tightest per-transaction limit. Measured on ` +
+      `[\`${String(footprint.txHash).slice(0, 12)}…\`](https://stellar.expert/explorer/testnet/tx/${footprint.txHash})` +
+      `${footprint.ledger ? ` in ledger ${footprint.ledger.toLocaleString('en-US')}` : ''}.`,
+  );
+  w();
+  w(`Memory is the one row without a measurement: ${footprint.memoryNote}`);
+  w();
+}
+
+/* ── dependency licences ──────────────────────────────────────────────────── */
+
+if (licenses?.summary) {
+  const s2 = licenses.summary;
+  w('## Dependency licences');
+  w();
+  w(`\`npm run audit:licenses\` enumerates the production dependency tree — ${s2.total} packages,`);
+  w('workspaces included, dev dependencies excluded because they are not redistributed — and');
+  w('reads each declared licence out of the installed `package.json`. CI runs it with');
+  w('`--strict`, so an unknown licence fails the build alongside a copyleft one.');
+  w();
+  w('| Licence | Packages |');
+  w('|---|---|');
+  for (const [license, count] of Object.entries(licenses.byLicense ?? {})) {
+    w(`| \`${license}\` | ${count} |`);
+  }
+  w();
+  w(
+    `**${s2.strongCopyleft} strong copyleft, ${s2.weakCopyleft} weak copyleft, ${s2.unknown} unknown** ` +
+      `across ${s2.total} packages. That is the check behind the architectural claim that this ` +
+      'facilitator is self-hosted on `@x402/stellar` rather than built on the AGPL-3.0 ' +
+      'OpenZeppelin Relayer — the licence argument is now a property of the installed tree, ' +
+      'not a statement of intent.',
+  );
   w();
 }
 

@@ -1038,6 +1038,14 @@ Channels relayer (AGPL-3.0-or-later, disqualifying for a permissively licensed p
 `npm install && npm run setup && npm run dev:all` reproduces the whole stack on testnet with
 no faucet, no captcha and no API key.
 
+That licence claim is checked rather than asserted. `npm run audit:licenses` walks the
+production dependency tree, reads each declared licence out of the installed
+`package.json`, and fails on AGPL, SSPL, GPL or any other strong copyleft; CI runs it with
+`--strict`, so an *unknown* licence fails the build too. The current result — 191 packages,
+all permissive, nothing unknown — is published in
+[EVIDENCE.md](/evidence/verify-it-yourself#dependency-licences) and regenerated into
+[`docs/status/licenses.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/licenses.json) on every run.
+
 ---
 
 ## 10. Architecture mapped to the funded tranches

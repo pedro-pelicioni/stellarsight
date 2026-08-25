@@ -67,6 +67,15 @@ jobs:
       - name: API conformance
         run: npm run verify:api
 
+      # The claim that nothing in the production path is strong copyleft — the reason this
+      # facilitator is self-hosted on @x402/stellar rather than built on the AGPL-3.0
+      # OpenZeppelin Relayer — is argued in three documents. This is the step that makes it
+      # a fact about the installed tree instead: enumerate production dependencies, read
+      # each declared license, and fail the build if AGPL, SSPL, GPL or another strong
+      # copyleft appears anywhere in the path.
+      - name: Dependency licences permit redistribution
+        run: npm run audit:licenses -- --emit --strict
+
       # Search quality is a number or it is an opinion. This runs the graded golden set in
       # eval/golden.jsonl through the real ranker and fails the build if nDCG@10,
       # Recall@20, MRR@10 or Precision@1 fall more than 0.02 below eval/baseline.json.

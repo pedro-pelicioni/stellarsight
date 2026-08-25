@@ -31,6 +31,7 @@
     "evidence:batch": "node scripts/evidence-batch.mjs",
     "evidence:build": "node scripts/build-evidence.mjs",
   "evidence:footprint": "node scripts/soroban-footprint.mjs",
+  "audit:licenses": "node scripts/license-audit.mjs",
     "eval:search": "node scripts/eval-search.mjs",
     "eval:search:report": "node scripts/eval-search.mjs --report",
     "load:baseline": "node scripts/load-baseline.mjs",
