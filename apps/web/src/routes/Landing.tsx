@@ -55,7 +55,7 @@ const HERO_CMD: CodeSpan[] = [
  * page previously carried a hand-typed 84 in the strip and 129 in the block, for the same
  * `npm test`, eighty lines apart.
  */
-const TEST_COUNT = 200
+const TEST_COUNT = 205
 const API_CHECKS = 46
 /**
  * Counted from the receipts, not typed in. This number moves every time a batch or a

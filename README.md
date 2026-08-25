@@ -15,8 +15,8 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 [![network: stellar:testnet](https://img.shields.io/badge/network-stellar%3Atestnet-brightgreen)](docs/TESTNET-TXS.md)
-[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-81-blue)](docs/TESTNET-TXS.md)
-[![tests](https://img.shields.io/badge/tests-200,_0_failing-brightgreen)](#running-it)
+[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-87-blue)](docs/TESTNET-TXS.md)
+[![tests](https://img.shields.io/badge/tests-205,_0_failing-brightgreen)](#running-it)
 [![nDCG@10](https://img.shields.io/badge/nDCG%4010-0.864_measured-blue)](docs/SEARCH-EVAL.md)
 
 </div>
@@ -34,7 +34,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 |---|---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer. Concretely: on stellar.expert the transaction's source / fee account equals [`GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT`](https://stellar.expert/explorer/testnet/account/GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT), while the payer appears only inside the Soroban authorization entry / `transfer` event. All four account keys: [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md) | 15s |
-| Catalog integrity is real, not decorative | `npm test` → 200 tests, 0 failing (66 of them adversarial) | 30s |
+| Catalog integrity is real, not decorative | `npm test` → 205 tests, 0 failing (66 of them adversarial) | 30s |
 | Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI | 20s |
 | We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys | 60s |
 | It stays that way | [CI](../../actions) runs the suite, the 49 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
@@ -259,7 +259,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
-| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 200 tests are its. On npm: `npm i @stellarsight/express` |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 205 tests are its. On npm: `npm i @stellarsight/express` |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |
@@ -295,7 +295,7 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 200 tests
+npm test           # 205 tests
 npm run verify:api # 49 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
@@ -460,13 +460,13 @@ Real hashes produced by this code, with explorer links:
 [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md).
 
 <!-- evidence:tally — rewritten by `npm run evidence:build`; do not hand-edit the numbers -->
-89 in total, and the split matters: **81 are x402 payments** and 8 are setup and cleanup
+95 in total, and the split matters: **87 are x402 payments** and 8 are setup and cleanup
 (5 setup, 3 cleanup) — trustlines, the SAC deploy, minting the test asset, and returning a
 legacy balance. Only the payment rows are evidence that the payment path works.
 
-The 81 also split by what produced them, because a settlement count without that is not
+The 87 also split by what produced them, because a settlement count without that is not
 evidence of anything: 55 from `npm run evidence:batch` (a serial script paying our own
-seller, prefixed `load:`), 20 from the demo loop, 6 from stock-client conformance runs.
+seller, prefixed `load:`), 20 from the demo loop, 12 from stock-client conformance runs.
 <!-- /evidence:tally -->
 
 Those counts are rewritten from the table itself by `npm run evidence:build`, which the
