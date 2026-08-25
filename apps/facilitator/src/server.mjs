@@ -11,7 +11,7 @@
  *   @x402/stellar/exact/facilitator -> ExactStellarScheme  (class; .verify/.settle)
  *   @x402/stellar                   -> createEd25519Signer
  *   @x402/core/facilitator          -> x402Facilitator     (class; .register/.registerExtension/.getSupported/.verify/.settle)
- *   @x402/extensions/bazaar         -> BAZAAR, extractDiscoveryInfo, validateAndExtract
+ *   @x402/extensions/bazaar         -> BAZAAR, validateAndExtract
  *
  * Ports: 4021 facilitator, 4022 bazaar index (packages/index mounted here).
  */
@@ -25,7 +25,7 @@ import dotenv from "dotenv";
 import { createEd25519Signer } from "@x402/stellar";
 import { ExactStellarScheme } from "@x402/stellar/exact/facilitator";
 import { x402Facilitator } from "@x402/core/facilitator";
-import { BAZAAR, extractDiscoveryInfo, validateAndExtract } from "@x402/extensions/bazaar";
+import { BAZAAR, validateAndExtract } from "@x402/extensions/bazaar";
 
 import { createFaucetHandler } from "./faucet.mjs";
 import { authIdentity, remember, replayReason, seen } from "./settled-nonces.mjs";
@@ -359,28 +359,67 @@ function encodeExtensionResponses(obj) {
   return Buffer.from(JSON.stringify(obj), "utf8").toString("base64");
 }
 
-/** Pull bazaar discovery metadata off the payload/requirements, if present. */
-function readDiscovery(paymentPayload, paymentRequirements) {
-  // Preferred: the library's own extractor.
-  for (const fn of [
-    () => validateAndExtract?.(paymentRequirements, paymentPayload),
-    () => extractDiscoveryInfo?.(paymentRequirements),
-    () => extractDiscoveryInfo?.(paymentPayload),
-  ]) {
-    try {
-      const out = fn();
-      if (out && (out.info || out.input || out.discoveryInfo)) return out;
-    } catch {
-      /* try the next strategy */
-    }
-  }
-  // Fallback: read the raw extension block we know the seller attaches.
-  const raw =
+/**
+ * Where the seller's bazaar extension block actually sits.
+ *
+ * The client echoes it from PaymentRequired into PaymentPayload, so the payload copy is
+ * the one that crossed the trust boundary and the one worth validating. The others are
+ * checked because older sellers put it elsewhere.
+ */
+function readDiscoveryBlock(paymentPayload, paymentRequirements) {
+  return (
     paymentPayload?.extensions?.bazaar ??
     paymentRequirements?.extensions?.bazaar ??
     paymentRequirements?.extra?.bazaar ??
-    paymentRequirements?.outputSchema?.bazaar;
-  return raw ?? null;
+    paymentRequirements?.outputSchema?.bazaar ??
+    null
+  );
+}
+
+/**
+ * Validate the seller's `info` against the `schema` it supplied, using the stock helper.
+ *
+ * RFP 3.2 is specific about this: the facilitator "validates `info` against the supplied
+ * `schema` and catalogs the resource with no separate registration step". We were not
+ * doing the first half.
+ *
+ * `validateAndExtract` takes ONE argument — the discovery extension — and this code passed
+ * it two, `(paymentRequirements, paymentPayload)`. That call returns
+ * `{valid:false, errors:["Schema validation failed: schema must be object or boolean"]}`
+ * for every input, because the first argument is not an extension. The guard below it then
+ * rejected the result and the loop fell through to a raw, unvalidated read of the same
+ * block. So the stock validator never ran, on any payment, and a listing whose `info`
+ * contradicted its own `schema` was catalogued anyway.
+ *
+ * Called correctly the helper does exactly what the RFP describes — a `serviceName` typed
+ * as a number against a schema declaring `string` comes back
+ * `{valid:false, errors:["/serviceName: must be string"]}`.
+ *
+ * Returns `{ ok: true, discovery }` or `{ ok: false, reason }`; the reason reaches the
+ * seller through EXTENSION-RESPONSES, so a rejected listing says why.
+ */
+function readDiscovery(paymentPayload, paymentRequirements) {
+  const block = readDiscoveryBlock(paymentPayload, paymentRequirements);
+  if (!block) return { ok: false, reason: null }; // nothing to catalog; not an error
+
+  if (typeof validateAndExtract === "function") {
+    try {
+      const out = validateAndExtract(block);
+      if (out?.valid === false) {
+        const errors = Array.isArray(out.errors) ? out.errors.join("; ") : "schema validation failed";
+        return { ok: false, reason: `discovery info does not satisfy the schema the seller supplied: ${errors}` };
+      }
+      // The helper returns the validated `info`; keep the rest of the block (input,
+      // schema, extensions) so the catalog record keeps everything it needs.
+      if (out?.valid === true) return { ok: true, discovery: { ...block, info: out.info ?? block.info } };
+    } catch (e) {
+      // A helper that throws is an upstream problem, not a seller problem. Fall through to
+      // the raw block rather than refusing a listing over it, and say so.
+      emit({ type: "catalog", ok: false, detail: `validateAndExtract threw (${reasonOf(e, "unknown")}) — cataloging unvalidated` });
+    }
+  }
+
+  return { ok: true, discovery: block };
 }
 
 /**
@@ -622,7 +661,18 @@ app.post("/settle", async (req, res) => {
 
     // --- bazaar discovery: auto-catalog the resource on a successful settle ---
     if (success) {
-      const discovery = readDiscovery(paymentPayload, paymentRequirements);
+      const extracted = readDiscovery(paymentPayload, paymentRequirements);
+
+      // A listing whose `info` contradicts its own `schema` is refused, and the seller is
+      // told why through EXTENSION-RESPONSES rather than being left to wonder why the
+      // resource never appeared. The payment itself already settled and is untouched by
+      // this — cataloging is a side effect of settlement, not a condition of it.
+      if (!extracted.ok && extracted.reason) {
+        bazaarResponse = { status: "rejected", rejectedReason: extracted.reason };
+        emit({ type: "catalog", ok: false, detail: extracted.reason });
+      }
+
+      const discovery = extracted.ok ? extracted.discovery : null;
       if (discovery) {
         try {
           const record = toCatalogRecord(paymentPayload, paymentRequirements, discovery);
