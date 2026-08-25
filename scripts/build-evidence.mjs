@@ -441,7 +441,12 @@ if (batches.length) {
   for (const b of batches.sort((a, b2) => String(a.generatedAt).localeCompare(String(b2.generatedAt)))) {
     const routes = Object.entries(b.perRoute ?? {})
       .map(([r, s]) => `${r} ${s.settled}/${s.attempted}`)
-      .join('<br>');
+      // `<br />`, not `<br>`: docs/EVIDENCE.md is projected into MDX for the documentation
+      // site, and MDX requires void elements to be self-closed. A bare `<br>` is parsed as an
+      // unclosed JSX element and takes the whole page down — it 404'd
+      // docs.stellarsight.xyz/evidence/verify-it-yourself while every sibling page served.
+      // GitHub renders the self-closed form identically, so nothing is lost here.
+      .join('<br />');
     w(
       `| ${String(b.generatedAt).slice(0, 16).replace('T', ' ')} | ${b.succeeded}/${b.total} | ${routes} | ${Math.round(b.latenciesMs?.p50 ?? 0)}ms | ${Math.round(b.latenciesMs?.p95 ?? 0)}ms |`,
     );

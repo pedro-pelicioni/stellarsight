@@ -1,6 +1,6 @@
 {
   "note": "Derived by scripts/lib/counts.mjs via npm run evidence:build. Do not hand-edit.",
-  "tests": 240,
+  "tests": 241,
   "adversarial": 70,
   "apiChecks": 49,
   "stockClientChecks": 9

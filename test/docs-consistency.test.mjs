@@ -218,3 +218,48 @@ test('the landing page publishes the counts the repository actually has', () => 
   }
   assert.match(landing, /\{counts\.adversarial\} of them adversarial/, 'the adversarial count on the proof strip is hand-typed again');
 });
+
+test('the projected MDX cannot contain constructs that break the docs build', () => {
+  // This is not hypothetical. A `<br>` emitted by the scripted-batch table took
+  // docs.stellarsight.xyz/evidence/verify-it-yourself down to a 404 while every sibling page
+  // served, and nothing noticed because the page renders fine on GitHub — Markdown accepts the
+  // bare tag, MDX does not. The failure is invisible from inside the repository, which is
+  // exactly the kind that needs a test rather than a habit.
+  //
+  // Scope is deliberately narrow: void HTML elements that are not self-closed, in prose. Code
+  // spans and fences are exempt because MDX does not parse them — that is where the mermaid
+  // diagrams keep their own `<br/>`.
+  const VOID_ELEMENTS = ['br', 'hr', 'img', 'input', 'meta', 'link', 'source', 'wbr'];
+
+  const walk = (dir) => {
+    const out = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...walk(full));
+      else if (entry.name.endsWith('.mdx')) out.push(full);
+    }
+    return out;
+  };
+
+  const offenders = [];
+  for (const file of walk(join(ROOT, 'docs-site'))) {
+    const source = readFileSync(file, 'utf8');
+    // Odd indices are code spans / fences, which MDX leaves alone.
+    source.split(/(```[\s\S]*?```|`[^`\n]*`)/).forEach((part, i) => {
+      if (i % 2 === 1) return;
+      for (const tag of VOID_ELEMENTS) {
+        for (const m of part.matchAll(new RegExp(`<${tag}(\\s[^>]*)?>`, 'g'))) {
+          if (m[0].endsWith('/>')) continue;
+          offenders.push(`${file.replace(`${ROOT}/`, '')}: ${m[0]}`);
+        }
+      }
+    });
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    'MDX requires void elements to be self-closed; these would 404 their page on the docs site:\n  ' +
+      offenders.join('\n  '),
+  );
+});
