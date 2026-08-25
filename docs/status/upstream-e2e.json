@@ -1,0 +1,89 @@
+{
+  "kind": "upstream-e2e",
+  "generatedAt": "2026-08-25T03:38:37.262Z",
+  "commit": "388b855",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "ok": true,
+  "suite": {
+    "repo": "x402-foundation/x402",
+    "path": "e2e/",
+    "commit": "6557149b143704a0989b704387aaa9aab15d8b2e",
+    "note": "The repository publishes no releases; pinning is by commit SHA only."
+  },
+  "target": "https://stellarsight.xyz",
+  "asset": {
+    "code": "USDC",
+    "sac": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+    "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+    "note": "Circle testnet USDC, hardcoded in @x402/stellar defaultMoneyConversion. The suite offers no asset override, so a Stellar run is a USDC run."
+  },
+  "sdk": {
+    "@x402/stellar": "2.21.0"
+  },
+  "command": "pnpm test --testnet --versions=2 --transport=http --families=stellar --schemes=exact --endpoints='/exact/stellar' --facilitators=stellarsight --extensions=bazaar",
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "networkMode": "testnet"
+  },
+  "scenarios": [
+    {
+      "client": "typescript/http/axios",
+      "server": "typescript/http/express",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "ac4b18e9b3a8a1ea3b4f92d48e1c65adea7a60a8e21f47c534b3b6ef504514fd",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/ac4b18e9b3a8a1ea3b4f92d48e1c65adea7a60a8e21f47c534b3b6ef504514fd"
+    },
+    {
+      "client": "typescript/http/fetch",
+      "server": "typescript/http/express",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "9bae6264c451775a4f94baf008205d3fc79fc50d70aa7e2ddedfe4e33fd9b506",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/9bae6264c451775a4f94baf008205d3fc79fc50d70aa7e2ddedfe4e33fd9b506"
+    },
+    {
+      "client": "typescript/http/axios",
+      "server": "typescript/http/fastify",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "b506b645f86ea763c3e5a78b8b33c17d9ee07604a7f7a1113ed4fe278f0ed2ee",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/b506b645f86ea763c3e5a78b8b33c17d9ee07604a7f7a1113ed4fe278f0ed2ee"
+    },
+    {
+      "client": "typescript/http/fetch",
+      "server": "typescript/http/fastify",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "c4035e78b314619d6c906d58da6df598a53ee6ca90f055d2b0bf46fa2ab07696",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/c4035e78b314619d6c906d58da6df598a53ee6ca90f055d2b0bf46fa2ab07696"
+    },
+    {
+      "client": "typescript/http/axios",
+      "server": "typescript/http/hono",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "065b20af275af143286d65a7346fcbbb53efc2fcc632bf02e2880518dbac2cb1",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/065b20af275af143286d65a7346fcbbb53efc2fcc632bf02e2880518dbac2cb1"
+    },
+    {
+      "client": "typescript/http/fetch",
+      "server": "typescript/http/hono",
+      "endpoint": "/exact/stellar",
+      "passed": true,
+      "txHash": "a221fa4a4de47aa8c010f7994f31859cffa68a3f7fa1f3f4a58279c82a254c93",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/a221fa4a4de47aa8c010f7994f31859cffa68a3f7fa1f3f4a58279c82a254c93"
+    }
+  ],
+  "limits": [
+    "The seller and the payer are processes the harness spawns locally; it has no remote-seller mode, so the hosted seller at stellarsight.xyz is not on this path. What is exercised remotely is the facilitator.",
+    "Reaching a deployed facilitator at all requires a forwarding relay in e2e/facilitators/external-proxies/, which is gitignored upstream and therefore first-party. Ours is published at e2e-proxy/ so the run is auditable.",
+    "stellar:pubnet is Tranche 3. The RFP asks for both networks; this is the testnet half, and the other half is scheduled rather than skipped."
+  ],
+  "workarounds": [
+    "x402-foundation/x402#3187 (open; fix PR #3228 unmerged): e2e/clients/typescript/client.ts derives EVM and SVM signers before branching on --families, so a Stellar-only run crashes without CLIENT_EVM_PRIVATE_KEY and a 64-byte CLIENT_SVM_PRIVATE_KEY. Both are unused decoys in this run."
+  ]
+}

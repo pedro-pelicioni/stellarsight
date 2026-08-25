@@ -196,6 +196,7 @@ const conformance = readEvidence('conformance');
 const rejections = readEvidence('rejections');
 const provenance = readEvidence('provenance');
 const nightly = readEvidence('nightly');
+const upstreamE2e = readEvidence('upstream-e2e');
 
 const labelCounts = {};
 for (const meta of Object.values(provenance?.hashes ?? {})) {
@@ -298,7 +299,7 @@ w('| Scheme | Asset | Network | Status |');
 w('|---|---|---|---|');
 const asset = conformance?.asset ? `SXT (SAC \`${conformance.asset}\`)` : 'SXT';
 w(`| \`exact\` | ${asset} | \`stellar:testnet\` | settled, hashes published |`);
-w('| `exact` | USDC | `stellar:testnet` | supported by the same code path (any SEP-41); not yet exercised here |');
+w(`| \`exact\` | USDC (Circle) | \`stellar:testnet\` | ${upstreamE2e?.summary ? `settled — ${upstreamE2e.summary.passed} payments through the upstream e2e suite, hashes below` : 'supported by the same code path (any SEP-41); not yet exercised here'} |`);
 w('| `exact` | USDC | `stellar:pubnet` | Tranche 3 |');
 w('| `upto` | — | — | Tranche 2. Ships a dedicated Soroban settlement contract (`settle_upto` via `require_auth_for_args`): no admin, no persistent storage, never holds a balance. See [upto-position.md](./upto-position.md). |');
 w();
@@ -323,6 +324,48 @@ if (conformance?.criteria?.length) {
     w();
   }
   w('Artifact: [`docs/status/conformance.json`](./status/conformance.json)');
+  w();
+}
+
+/* ── the upstream e2e suite ───────────────────────────────────────────────── */
+
+if (upstreamE2e?.summary) {
+  const s = upstreamE2e.summary;
+  w('## The x402 repository\'s own e2e suite');
+  w();
+  w('The RFP names this as a hard acceptance criterion: *"a passing run of the x402 repo\'s');
+  w('e2e suite for both networks"*. This is the `stellar:testnet` half — `stellar:pubnet` is');
+  w('Tranche 3 work, so the other half is scheduled rather than skipped.');
+  w();
+  w(`\`${s.passed}/${s.total}\` scenarios passed against **${upstreamE2e.target}**, on suite commit`);
+  w(`[\`${String(upstreamE2e.suite?.commit ?? '').slice(0, 12)}\`](https://github.com/x402-foundation/x402/commit/${upstreamE2e.suite?.commit}).`);
+  w();
+  w('Every payment settled in **Circle testnet USDC** — not by choice but by construction:');
+  w('the suite\'s Stellar route resolves its asset through `@x402/stellar`\'s');
+  w('`defaultMoneyConversion` and offers no override, so a Stellar run *is* a USDC run. That');
+  w('also answers, on chain, the "any SEP-41 token, USDC by default" line in RFP 3.1 that this');
+  w('project had until now only claimed.');
+  w();
+  w('| Client | Server | Result | Settled |');
+  w('|---|---|---|---|');
+  for (const sc of upstreamE2e.scenarios ?? []) {
+    const tx = sc.txHash ? `[\`${sc.txHash.slice(0, 10)}…\`](${sc.explorerUrl})` : '—';
+    w(`| \`${sc.client}\` | \`${sc.server}\` | ${sc.passed ? '✓' : '✗'} | ${tx} |`);
+  }
+  w();
+  if (upstreamE2e.limits?.length) {
+    w('**What this run does not cover**, stated here rather than left for a reader to find:');
+    w();
+    for (const l of upstreamE2e.limits) w(`- ${l}`);
+    w();
+  }
+  if (upstreamE2e.workarounds?.length) {
+    w('**Upstream defects worked around:**');
+    w();
+    for (const x of upstreamE2e.workarounds) w(`- ${x}`);
+    w();
+  }
+  w('Artifact: [`docs/status/upstream-e2e.json`](./status/upstream-e2e.json) · relay source: [`e2e-proxy/`](../e2e-proxy)');
   w();
 }
 

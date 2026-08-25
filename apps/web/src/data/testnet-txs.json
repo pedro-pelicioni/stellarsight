@@ -238,6 +238,16 @@
     "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
+    "hash": "fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882",
+    "label": "conformance: stock @x402/fetch fx usd brl 2026 08 21",
+    "source": "live",
+    "settledAt": "2026-08-21T05:38:41Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
     "hash": "9e1c4dfc8aa3d754d7714c2fdd7924867346661a61e4f74c724a5bd955a7dca4",
     "label": "load: /v1/fx/usd brl scripted batch 2026 08 21",
     "source": "live",
@@ -812,6 +822,126 @@
     "label": "demo: ocr invoice 2026 08 21",
     "source": "live",
     "settledAt": "2026-08-21T06:22:00Z",
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "7feaea4d526040f8f70b92425fede8665d8e3ef656caaf1f0bee6a01929424a3",
+    "label": "conformance: nightly hosted 2026 08 22 /v1/fx/usd brl 2026 08 22",
+    "source": "live",
+    "settledAt": "2026-08-22T07:11:27Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GCRGGRZL7DR62URXK27OIGNIOIVI3LP7J3FCJ4J7VLML2M6JMHPZXIOM",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "bdb0904c06774f62468fc62218da8945cfd7ffe30abcbaa7c3df5d210fc5b7c6",
+    "label": "conformance: nightly hosted 2026 08 23 /v1/fx/usd brl 2026 08 23",
+    "source": "live",
+    "settledAt": "2026-08-23T07:12:48Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GCNRE6G7WATKZ3WBPTPP7RQFC4SLF5EUXSI7CO6IASD66BFWH2QOWQCD",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "a1604db95a147af4745fb796b166884e194a9ee090900222d938cf4e21c8f4a8",
+    "label": "conformance: nightly hosted 2026 08 24 /v1/fx/usd brl 2026 08 24",
+    "source": "live",
+    "settledAt": "2026-08-24T07:40:41Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GBA6D32RA24UDH2JGB7KT2PKUEAGVR4DET7NPI76EEGGY2G77KWQRLAW",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "ac4b18e9b3a8a1ea3b4f92d48e1c65adea7a60a8e21f47c534b3b6ef504514fd",
+    "label": "conformance: upstream x402 e2e suite axios express USDC 2026 08",
+    "source": "live",
+    "settledAt": "2026-08-25T03:35:10Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "9bae6264c451775a4f94baf008205d3fc79fc50d70aa7e2ddedfe4e33fd9b506",
+    "label": "conformance: upstream x402 e2e suite fetch express USDC 2026 08",
+    "source": "live",
+    "settledAt": "2026-08-25T03:35:20Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "b506b645f86ea763c3e5a78b8b33c17d9ee07604a7f7a1113ed4fe278f0ed2ee",
+    "label": "conformance: upstream x402 e2e suite axios fastify USDC 2026 08",
+    "source": "live",
+    "settledAt": "2026-08-25T03:35:45Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "c4035e78b314619d6c906d58da6df598a53ee6ca90f055d2b0bf46fa2ab07696",
+    "label": "conformance: upstream x402 e2e suite fetch fastify USDC 2026 08",
+    "source": "live",
+    "settledAt": "2026-08-25T03:35:55Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "065b20af275af143286d65a7346fcbbb53efc2fcc632bf02e2880518dbac2cb1",
+    "label": "conformance: upstream x402 e2e suite axios hono USDC 2026 08 25",
+    "source": "live",
+    "settledAt": "2026-08-25T03:36:20Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "a221fa4a4de47aa8c010f7994f31859cffa68a3f7fa1f3f4a58279c82a254c93",
+    "label": "conformance: upstream x402 e2e suite fetch hono USDC 2026 08 25",
+    "source": "live",
+    "settledAt": "2026-08-25T03:36:30Z",
+    "amount": "0.0010000",
+    "assetCode": "USDC",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "8408a9a27a2fc20fbf786514c790e80410dc6c86de57e2384c7f8f9abb9bc3f8",
+    "label": "demo: postal code lookup 2026 08 25",
+    "source": "live",
+    "settledAt": "2026-08-25T03:39:55Z",
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "1bc0179824805570872f3d7d5bbdc31d9163d2163fe0d49d4a6ecfb027ffd8b5",
+    "label": "demo: fx usd brl 2026 08 25",
+    "source": "live",
+    "settledAt": "2026-08-25T03:40:00Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "873cbf722dc6f93df375b944c0dbe85df711df886c90d7b0ae9c6f3415375a23",
+    "label": "demo: ocr invoice 2026 08 25",
+    "source": "live",
+    "settledAt": "2026-08-25T03:40:10Z",
     "amount": "0.0500000",
     "assetCode": "SXT",
     "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
