@@ -18,8 +18,8 @@
   },
   "scripts": {
     "setup": "node scripts/setup-testnet.mjs",
-    "dev:facilitator": "node apps/facilitator/src/server.mjs",
-    "dev:seller": "node apps/seller/src/server.mjs",
+    "dev:facilitator": "STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 node apps/facilitator/src/server.mjs",
+    "dev:seller": "STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 node apps/seller/src/server.mjs",
     "dev:web": "npm --workspace apps/web run dev",
     "dev:all": "concurrently -n facilitator,seller -c cyan,magenta \"npm run dev:facilitator\" \"npm run dev:seller\"",
     "demo": "node scripts/demo-loop.mjs",
@@ -35,6 +35,7 @@
     "eval:search": "node scripts/eval-search.mjs",
     "eval:search:report": "node scripts/eval-search.mjs --report",
     "load:baseline": "node scripts/load-baseline.mjs",
+  "latency:discovery": "node scripts/latency-baseline.mjs",
     "test:agent": "node --test apps/agent/src/replay-guard.test.mjs",
     "demo:agent": "node apps/agent/src/cli.mjs",
     "mcp": "node apps/agent/src/mcp-server.mjs",

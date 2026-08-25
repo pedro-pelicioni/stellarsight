@@ -68,7 +68,7 @@ cannot redirect a payment, change an amount, or move funds it was not authorized
 **The catalog is a trust boundary.** Discovery metadata is attacker-controlled: clients
 echo the `resource` block back inside the payment payload, and everything the catalog
 returns will be read by an LLM-driven agent that then sends money. Validation is therefore
-mechanical and adversarial, and 66 of the repository's tests exist only to attack it.
+mechanical and adversarial, and 70 of the repository's tests exist only to attack it.
 
 **Listings are born from settled Stellar payments.** A resource enters the catalog when a
 settlement carrying the discovery extension succeeds, and the entry is bound to that
@@ -265,6 +265,17 @@ captcha and no API key. That is a deliberate developer-experience decision, not 
 the `exact` scheme accepts any SEP-41 token and USDC is only the default. **Mainnet launches
 on the Circle USDC SAC** (Tranche 3, deliverable 3.1), with additional assets enabled by
 configuration.
+
+**A trustline comes first, and that is an onboarding problem, not a payment one.** A Stellar
+account cannot receive a SEP-41 asset until it holds a trustline to it, so both sides of a
+first payment need one before anything can settle. This deployment absorbs that for the
+paths it controls — `npm run setup` issues `SXT`, deploys its SAC and adds the trustlines in
+one idempotent command, and the public faucet funds a browser visitor's throwaway account
+the same way — which is why the quickstart reaches a settled payment without a separate
+onboarding step. It is worth being explicit that this is a *local* answer to a general
+problem: the RFP points at **AHA Labs' Trustline Onboarder RFP** as the ecosystem-level
+solution, and when that lands the right move is to route buyers to it rather than to keep
+growing a faucet. Nothing in the payment path assumes our version.
 
 Amounts are integer strings in atomic units, 7 decimals. In x402 **v2** the price field on
 `PaymentRequirements` is `amount`; the v1 name `maxAmountRequired` fails
@@ -573,7 +584,7 @@ durable write is surfaced in the response instead of being swallowed.
 ### 3.4 Catalog integrity
 
 The facilitator is a trust boundary, so every discovery field is treated as hostile input.
-66 adversarial tests enforce the rules; the ones that matter most:
+70 adversarial tests enforce the rules; the ones that matter most:
 
 - **`routeTemplate` traversal.** The spec's normative regex `^/[a-zA-Z0-9_/:.\-~%]+$`
   *permits* `%`, so the `..` check must run **after** percent-decoding, and must survive
@@ -664,12 +675,25 @@ Three things the comparison surfaced that an argument would not have:
    field either side adds is additive on top of that, ours included, and ours are listed in
    the same table rather than only the other implementation's. A report that enumerates
    only somebody else's extras is marketing.
-3. **The one field CDP carries that this catalog does not is `quality`.** It is noted rather
-   than copied: what it means is not specified anywhere we can point at, and adding a field
-   whose semantics we would be guessing at is how a catalog starts lying. The ranking signal
-   this catalog does publish — `settlements`, with its provenance label (§3.5) — is defined
-   in §4.1. Conversely the two fields CDP adds to `accepts[]`, `currency` and `recipient`,
-   duplicate `asset` and `payTo` and are not in the shipped schema.
+3. **The one field the reference catalog carries that this one does not is `quality`.** An
+   earlier version of this section justified skipping it by saying its meaning is not
+   specified anywhere we could point at. Half of that has stopped being true and the
+   correction matters: the *spec* still does not define it, but running this comparison
+   against more than one Bazaar implementation shows the field converging on an agreed
+   shape in practice — settlement count, unique payers, and first/last-seen timestamps.
+   A de-facto shape is weaker than a specified one, and it is no longer nothing.
+
+   So the honest position is narrower than the old one. We do not carry `quality` because
+   two of its four components are counts we would be publishing about ourselves: this
+   catalog has had no external buyers, so a `uniquePayers` here would be a number about our
+   own scripts (§3.5). Publishing it would be the exact failure the provenance labels exist
+   to prevent, one field further down. What this catalog does publish is `settlements`,
+   defined in §4.1 and carrying its provenance label, which is the same signal with its
+   denominator attached. If `quality` is specified upstream, adopting it is a mapping
+   exercise, not a redesign — and the first listing with an outside payer behind it is the
+   point at which it starts meaning something. Conversely the two fields the reference adds
+   to `accepts[]`, `currency` and `recipient`, duplicate `asset` and `payTo` and are not in
+   the shipped schema.
 
 This also answers the conformance baseline the RFP's appendix suggests — pointing the same
 stock client at a reference facilitator and at the deliverable — with the artifact rather
@@ -1193,7 +1217,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 235 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 239 tests, 70 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 

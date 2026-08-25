@@ -178,6 +178,48 @@ function isBlockedHost(host) {
 }
 
 /**
+ * isPubliclyRoutableHost(host) -> null | string (the reason it is not)
+ *
+ * A catalog is a discovery index, so a resource nobody outside can reach is not a
+ * discovery result — it is noise that inflates the catalog's apparent size and wastes the
+ * click of anyone who tries it. This is not the `iconUrl` deny-list: that one is an SSRF
+ * control and is deliberately paranoid (it rejects bare IP literals outright). A resource
+ * legitimately can live on a public IP, so this check rejects only what is genuinely
+ * unreachable from outside: loopback, private and link-local ranges, and internal-only
+ * names.
+ *
+ * The escape hatch is `STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1`, which local development
+ * sets so `npm run dev:all` still catalogs the seller it just paid on `localhost`.
+ */
+export function isPubliclyRoutableHost(host) {
+  const h = String(host ?? '').toLowerCase().replace(/^\[|\]$/g, '');
+  if (h.length === 0) return 'empty host';
+  if (h === 'localhost' || h.endsWith('.localhost')) return 'loopback hostname';
+  if (h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.localdomain')) return 'internal-only TLD';
+
+  // IPv6: loopback, link-local (fe80::/10), unique-local (fc00::/7), unspecified.
+  if (h.includes(':')) {
+    if (h === '::1' || h === '::') return 'IPv6 loopback';
+    if (/^fe[89ab][0-9a-f]:/.test(h)) return 'IPv6 link-local';
+    if (/^f[cd][0-9a-f]{2}:/.test(h)) return 'IPv6 unique-local';
+    return null;
+  }
+
+  // IPv4 dotted quad only — a hostname that merely looks numeric is left to DNS.
+  const quad = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (quad) {
+    const [a, b] = quad.slice(1).map(Number);
+    if (a === 127) return 'IPv4 loopback';
+    if (a === 10) return 'IPv4 private range';
+    if (a === 172 && b >= 16 && b <= 31) return 'IPv4 private range';
+    if (a === 192 && b === 168) return 'IPv4 private range';
+    if (a === 169 && b === 254) return 'IPv4 link-local';
+    if (a === 0) return 'IPv4 unspecified';
+  }
+  return null;
+}
+
+/**
  * validateIconUrl(u) -> { valid: boolean, reason?: string, value?: string }
  *
  * [spec: absolute http/https, no data:/file:/other schemes, no userinfo, IDN-normalized
@@ -262,6 +304,22 @@ export function validateResourceUrl(u) {
     return { valid: false, reason: `resource.url scheme "${url.protocol}" is not http/https` };
   }
   if (url.username !== '' || url.password !== '') return { valid: false, reason: 'resource.url must not contain userinfo' };
+
+  // A publicly served catalog must not advertise resources only its own operator can
+  // reach. This ran without the check for a while and it showed: three
+  // `http://localhost:402x/exact/stellar` rows — real settlements from the upstream e2e
+  // suite, run through a relay — sat in the public catalog as half of everything that was
+  // not seed data. The settlements are real; the listings were unusable to anyone else.
+  //
+  // Because `catalog.upsert()` is the single door for both the settle path and the
+  // restore-from-store path, adding it here both stops new ones and drops the existing
+  // ones the next time the catalog loads.
+  if (process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES !== '1') {
+    const unreachable = isPubliclyRoutableHost(url.hostname);
+    if (unreachable) {
+      return { valid: false, reason: `resource.url host is not publicly reachable (${unreachable})` };
+    }
+  }
   return { valid: true, value: url.href };
 }
 

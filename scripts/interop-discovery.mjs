@@ -23,9 +23,19 @@
  * Anything either side adds beyond the shared set is reported, in both directions —
  * including ours. A report that only lists the other implementation's extras is marketing.
  *
+ * The tool is target-agnostic on purpose. The published run compares this deployment
+ * against the reference implementation, but the comparison is not hard-coded: point it at
+ * any facilitator that serves the Bazaar discovery endpoint and it produces the same table.
+ * That matters more than any single result — an interoperability claim you cannot re-run
+ * against a facilitator of your own choosing is a screenshot, not a property.
+ *
  * Usage:
  *   node scripts/interop-discovery.mjs
  *   node scripts/interop-discovery.mjs --limit 25 --emit
+ *   node scripts/interop-discovery.mjs --target "Some Facilitator=https://example.test"
+ *
+ *   `--target` is repeatable and replaces the default pair when given. The first target is
+ *   treated as the reference side of the diff, the last as the deliverable.
  */
 import { withBazaar } from '@x402/extensions/bazaar';
 import { HTTPFacilitatorClient } from '@x402/core/server';
@@ -48,10 +58,31 @@ const LIMIT = Number(flag('limit', '20'));
  * the same path. Both are recorded below so the claim is checkable and so the picture
  * updates when they implement it.
  */
-const TARGETS = [
+const DEFAULT_TARGETS = [
   { key: 'cdp', name: 'CDP (Coinbase)', url: 'https://api.cdp.coinbase.com/platform/v2/x402', role: 'reference' },
   { key: 'stellarsight', name: 'STELLARSIGHT', url: 'https://stellarsight.xyz', role: 'deliverable' },
 ];
+
+/** `--target "Label=https://url"`, repeatable. Replaces the defaults when present. */
+function targetsFromArgv() {
+  const given = [];
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] !== '--target') continue;
+    const raw = argv[i + 1];
+    if (!raw || raw.startsWith('--')) continue;
+    const at = raw.indexOf('=');
+    const name = at > 0 ? raw.slice(0, at).trim() : new URL(raw).host;
+    const url = (at > 0 ? raw.slice(at + 1) : raw).trim().replace(/\/$/, '');
+    given.push({ key: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name, url, role: 'target' });
+  }
+  if (given.length === 0) return DEFAULT_TARGETS;
+  if (given.length === 1) return [{ ...given[0], role: 'reference' }, DEFAULT_TARGETS[1]];
+  given[0].role = 'reference';
+  given[given.length - 1].role = 'deliverable';
+  return given;
+}
+
+const TARGETS = targetsFromArgv();
 
 const NOT_SERVING_DISCOVERY = [
   { name: 'x402.org facilitator', url: 'https://x402.org/facilitator', observed: '/supported answers 200; /discovery/resources answers 404' },
@@ -112,7 +143,10 @@ async function probe(target) {
 }
 
 const results = await Promise.all(TARGETS.map(probe));
-const [reference, ours] = results;
+// The diff is always reference-versus-deliverable. With more than two targets the extras
+// are still probed and reported in the artifact; they just are not the axis of the diff.
+const reference = results.find((r) => r.role === 'reference') ?? results[0];
+const ours = results.find((r) => r.role === 'deliverable') ?? results[results.length - 1];
 
 const keysOf = (o) => new Set(Object.keys(o ?? {}));
 const compare = (a, b) => {

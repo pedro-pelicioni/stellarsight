@@ -200,6 +200,7 @@ const upstreamE2e = readEvidence('upstream-e2e');
 const footprint = readEvidence('soroban-footprint');
 const licenses = readEvidence('licenses');
 const interop = readEvidence('interop-discovery');
+const latency = readEvidence('discovery-latency');
 
 const labelCounts = {};
 for (const meta of Object.values(provenance?.hashes ?? {})) {
@@ -471,6 +472,34 @@ if (footprint?.used && footprint?.limits) {
   );
   w();
   w(`Memory is the one row without a measurement: ${footprint.memoryNote}`);
+  w();
+}
+
+/* ── discovery latency ────────────────────────────────────────────────────── */
+
+if (latency?.probes?.length) {
+  w('## How fast discovery answers');
+  w();
+  w('Wall-clock from the measuring machine over the public internet to a parsed JSON body —');
+  w('network round-trip and CDN included, because that is what a caller experiences. A');
+  w('server-side timer would look better and mean less. Regenerate with');
+  w('`npm run latency:discovery -- --emit`.');
+  w();
+  w('| Probe | Uncached p50 / p95 / p99 | Cached p50 / p95 / p99 |');
+  w('|---|---|---|');
+  for (const p of latency.probes) {
+    const f = (s2) => `${s2.p50} / ${s2.p95} / ${s2.p99} ms`;
+    w(`| \`${p.label}\` | ${f(p.uncached)} | ${f(p.cached)} |`);
+  }
+  w();
+  w(
+    `Worst uncached p95 is **${latency.worstUncachedP95Ms} ms** across ${latency.samplesPerProbe} samples per probe, ` +
+      `${latency.failures} failed request(s). **Uncached and cached are never averaged together.** ` +
+      'Uncached forces a CDN miss with a unique parameter per request so the function actually ' +
+      'runs — that is the honest number. Cached repeats one URL, which is what a caller polling ' +
+      'a hot query sees; it is reported because it is true and labelled because quoting it alone ' +
+      'would be the flattering half of the measurement.',
+  );
   w();
 }
 

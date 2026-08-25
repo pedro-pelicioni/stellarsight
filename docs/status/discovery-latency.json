@@ -1,0 +1,132 @@
+{
+  "kind": "discovery-latency",
+  "generatedAt": "2026-08-25T18:32:06.300Z",
+  "commit": "090f847",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "site": "https://stellarsight.xyz",
+  "method": "Wall-clock from the measuring machine over the public internet to a parsed JSON body. Includes network round-trip and CDN behaviour; not a server-side timer.",
+  "samplesPerProbe": 25,
+  "warmupDiscarded": 3,
+  "cacheNote": "uncached forces a CDN miss with a unique parameter per request, so the function runs. cached repeats one URL, which is what a caller polling a hot query sees. They are never averaged together.",
+  "probes": [
+    {
+      "key": "search",
+      "label": "GET /discovery/search",
+      "path": "/discovery/search?query=invoice%20ocr&limit=10",
+      "uncached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "MISS"
+        ],
+        "p50": 178,
+        "p95": 219,
+        "p99": 394,
+        "min": 164,
+        "max": 448
+      },
+      "cached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "HIT"
+        ],
+        "p50": 34,
+        "p95": 46,
+        "p99": 50,
+        "min": 29,
+        "max": 51
+      }
+    },
+    {
+      "key": "search-filtered",
+      "label": "GET /discovery/search + filters",
+      "path": "/discovery/search?query=fx%20rate&network=stellar:testnet&limit=10",
+      "uncached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "MISS"
+        ],
+        "p50": 172,
+        "p95": 207,
+        "p99": 218,
+        "min": 162,
+        "max": 221
+      },
+      "cached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "HIT"
+        ],
+        "p50": 36,
+        "p95": 54,
+        "p99": 58,
+        "min": 31,
+        "max": 59
+      }
+    },
+    {
+      "key": "resources",
+      "label": "GET /discovery/resources",
+      "path": "/discovery/resources?limit=25",
+      "uncached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "MISS"
+        ],
+        "p50": 184,
+        "p95": 301,
+        "p99": 320,
+        "min": 168,
+        "max": 325
+      },
+      "cached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "HIT"
+        ],
+        "p50": 36,
+        "p95": 45,
+        "p99": 47,
+        "min": 33,
+        "max": 47
+      }
+    },
+    {
+      "key": "resources-filtered",
+      "label": "GET /discovery/resources + filters",
+      "path": "/discovery/resources?scheme=exact&network=stellar:testnet&limit=25",
+      "uncached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "MISS"
+        ],
+        "p50": 186,
+        "p95": 305,
+        "p99": 311,
+        "min": 171,
+        "max": 313
+      },
+      "cached": {
+        "samples": 25,
+        "failures": 0,
+        "cacheStates": [
+          "HIT"
+        ],
+        "p50": 36,
+        "p95": 48,
+        "p99": 109,
+        "min": 32,
+        "max": 128
+      }
+    }
+  ],
+  "worstUncachedP95Ms": 305,
+  "failures": 0
+}

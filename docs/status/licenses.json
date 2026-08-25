@@ -1,7 +1,7 @@
 {
   "kind": "licenses",
-  "generatedAt": "2026-08-25T16:35:39.387Z",
-  "commit": "c06a509",
+  "generatedAt": "2026-08-25T18:35:35.518Z",
+  "commit": "090f847",
   "node": "v22.22.3",
   "network": "stellar:testnet",
   "scope": "production dependency tree (`npm ls --omit=dev --all`), all workspaces",

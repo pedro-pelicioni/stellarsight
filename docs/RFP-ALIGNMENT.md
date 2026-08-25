@@ -59,7 +59,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | Automatic cataloging, with no separate seller registration | **Delivered** | [ARCHITECTURE §3.1](ARCHITECTURE.md#31-cataloging-is-a-side-effect-of-getting-paid) — a listing is a side effect of a **settled** payment; `/verify` never writes to the catalog |
 | Readable by the stock `@x402/extensions` client | **Delivered** | `npm run check:bazaar` against any deployment; 49 checks in `npm run verify:api` |
-| Catalog integrity — *"the facilitator is a trust boundary"* | **Delivered** | 66 adversarial tests: traversal under triple encoding, `iconUrl` SSRF, tag flooding, external `$ref` |
+| Catalog integrity — *"the facilitator is a trust boundary"* | **Delivered** | 70 adversarial tests: traversal under triple encoding, `iconUrl` SSRF, tag flooding, external `$ref`, and resource URLs on hosts nobody outside can reach |
 | Natural-language search, with a stated evaluation method | **Delivered** | `npm run eval:search` → nDCG@10 0.864 over a 50-query graded set, with a CI regression gate |
 | Listings representable consistently with other facilitators', *"so Stellar is not a walled garden"* | **Delivered** | `npm run verify:interop` → [one client, two facilitators](EVIDENCE.md#interoperability-one-client-two-facilitators); [ARCHITECTURE §3.6](ARCHITECTURE.md#36-interoperability-measured-against-another-facilitator) |
 | Golden set at 150–200 queries; wire shape locked by golden tests | **T1** | ARCHITECTURE §10 |
@@ -91,6 +91,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | *"Soroban resource limits. Verify, settle, and any registry operations must stay within per transaction read, write, instruction, and memory limits."* | **Delivered**, measured | `npm run evidence:footprint` → [what a settlement costs the host](EVIDENCE.md#what-a-settlement-costs-the-soroban-host); [ARCHITECTURE §2.7](ARCHITECTURE.md#27-soroban-resource-limits-measured). Worst utilization 1.5%; memory reported as **unobserved** rather than guessed; no on-chain registry exists, so that clause has no operation to bound |
 | SEP-41 / SAC assets | **Delivered** | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) |
+| Trustlines: onboarding and examples must account for the prerequisite (the RFP points at AHA Labs' **Trustline Onboarder** RFP) | **Delivered** for the paths this deployment controls; the ecosystem-level answer is deliberately not ours to build | [ARCHITECTURE §2.3](ARCHITECTURE.md#23-sep-41--sac) — `npm run setup` issues, deploys and trusts in one idempotent command; the public faucet does the same for a browser visitor |
 
 ---
 
@@ -102,6 +103,8 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 | *"No AGPL or other strong copyleft in the dependency path … **Confirm dependency licenses and flag anything uncertain.**"* | **Delivered**, confirmed rather than asserted | `npm run audit:licenses` → [dependency licences](EVIDENCE.md#dependency-licences): 191 production packages, all permissive, zero unknown. CI fails the build on strong copyleft **or** an unknown licence |
 | *"Drift, not inability, is the failure mode this screens for"* | **Delivered** | The drift we found **in ourselves**: our seller advertised `x402Version: 2` and answered 402 in the v1 wire format. [The whole story](../README.md#where-we-had-drifted), and a nightly stock-client run so it cannot recur |
 | Permissive licence end to end | **Delivered** | Apache-2.0, checked by the audit above |
+| Performance: fast discovery lookups, interactive-grade latency | **Delivered**, measured | `npm run latency:discovery` → [how fast discovery answers](EVIDENCE.md#how-fast-discovery-answers). Worst uncached p95 **305 ms**; cached and uncached reported separately and never averaged |
+| 99%+ uptime target, degraded-mode story | Degraded modes **Delivered** and tested; the measured 30-day uptime is **T3** | [MONITORING.md](MONITORING.md); read-only catalog degradation is exercised in `verify:api` |
 | External security review | **T3** | SCF Audit Bank; the fee is excluded from the budget per the rules |
 
 ---

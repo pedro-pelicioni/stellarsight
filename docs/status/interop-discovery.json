@@ -1,7 +1,7 @@
 {
   "kind": "interop-discovery",
-  "generatedAt": "2026-08-25T16:47:03.497Z",
-  "commit": "72fb52b",
+  "generatedAt": "2026-08-25T18:35:35.061Z",
+  "commit": "090f847",
   "node": "v22.22.3",
   "network": "stellar:testnet",
   "question": "Can one unmodified bazaar client read this deployment and another facilitator, and does a buyer get a constructible payment from either?",
@@ -14,7 +14,7 @@
       "url": "https://api.cdp.coinbase.com/platform/v2/x402",
       "role": "reference",
       "reachable": true,
-      "elapsedMs": 918,
+      "elapsedMs": 785,
       "envelopeKeys": [
         "items",
         "pagination",
@@ -24,7 +24,7 @@
       "pagination": {
         "limit": 20,
         "offset": 0,
-        "total": 15271
+        "total": 15084
       },
       "requestedLimit": 20,
       "returnedCount": 20,
@@ -61,7 +61,7 @@
       "url": "https://stellarsight.xyz",
       "role": "deliverable",
       "reachable": true,
-      "elapsedMs": 240,
+      "elapsedMs": 523,
       "envelopeKeys": [
         "items",
         "limit",

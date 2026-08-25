@@ -23,6 +23,7 @@ import {
   validateJsonSchema,
   scoreHybrid,
 } from '../packages/index/src/index.mjs';
+import { validateResourceUrl } from '../packages/index/src/integrity.mjs';
 import { seedCatalog } from '../packages/index/src/seed.mjs';
 
 const GOOD_URL = 'https://api.example.com/v1/thing';
@@ -752,4 +753,75 @@ test('seed: the demo catalog loads cleanly and exercises the completeness spread
   const scores = scoreHybrid('', catalog.all()).map((d) => d._explain.quality.completeness);
   assert.ok(Math.max(...scores) >= 0.9, 'expected at least one fully documented resource');
   assert.ok(Math.min(...scores) <= 0.3, 'expected at least one near-bare resource');
+});
+
+/* ── a public catalog must not advertise what only its operator can reach ──── */
+
+test('resource.url on a loopback or private host is refused', () => {
+  const unreachable = [
+    'http://localhost:4022/exact/stellar',
+    'http://sub.localhost/x',
+    'http://127.0.0.1/x',
+    'http://127.9.9.9/x',
+    'http://10.0.0.5/x',
+    'http://172.16.4.4/x',
+    'http://192.168.1.4/x',
+    'http://169.254.169.254/latest/meta-data',
+    'http://0.0.0.0/x',
+    'http://[::1]/x',
+    'http://api.internal/x',
+    'http://box.local/x',
+  ];
+  for (const url of unreachable) {
+    const r = validateResourceUrl(url);
+    assert.equal(r.valid, false, `${url} should be refused`);
+    assert.match(r.reason, /not publicly reachable/);
+  }
+});
+
+test('a public host — including a bare public IP — is still accepted', () => {
+  // Deliberately looser than the iconUrl deny-list: that one is an SSRF control and
+  // rejects IP literals outright. A resource can legitimately live on a public IP.
+  for (const url of [
+    'https://stellarsight.xyz/v1/fx/usd-brl',
+    'https://93.184.216.34/api',
+    'http://172.32.0.1/x', // just outside the 172.16/12 private block
+    'https://[2606:4700::1111]/x',
+  ]) {
+    assert.equal(validateResourceUrl(url).valid, true, `${url} should be accepted`);
+  }
+});
+
+test('local development can opt back in, and the opt-in is explicit', () => {
+  const prior = process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES;
+  try {
+    process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES = '1';
+    assert.equal(validateResourceUrl('http://localhost:4023/v1/thing').valid, true);
+    // Any value other than exactly "1" is not an opt-in.
+    process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES = 'true';
+    assert.equal(validateResourceUrl('http://localhost:4023/v1/thing').valid, false);
+  } finally {
+    if (prior === undefined) delete process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES;
+    else process.env.STELLARSIGHT_ALLOW_PRIVATE_RESOURCES = prior;
+  }
+});
+
+test('an unreachable resource is dropped on restore, not just on catalog', () => {
+  // catalog.upsert() is the single door for the settle path AND the store-restore path,
+  // so a record that was stored before this rule existed stops being served once it is
+  // re-read. That is what removes the localhost rows from the live catalog.
+  const catalog = createCatalog();
+  const stored = {
+    id: 'http://localhost:4022/exact/stellar',
+    resource: { url: 'http://localhost:4022/exact/stellar', serviceName: 'e2e relay' },
+    type: 'http',
+    scheme: 'exact',
+    network: 'stellar:testnet',
+    payTo: 'GSELLER',
+    asset: 'CASSET',
+    maxAmountRequired: '100000',
+    settlements: 2,
+  };
+  assert.equal(catalog.upsert(stored).ok, false, 'a stored loopback record must not restore');
+  assert.equal(catalog.list({ limit: 10 }).items.length, 0);
 });

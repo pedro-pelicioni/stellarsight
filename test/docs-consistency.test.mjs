@@ -157,9 +157,22 @@ test('every stated test count matches the tests that exist', () => {
   const adversarial = bySuffix('catalog-integrity.test.mjs');
   const middleware = bySuffix('express-middleware.test.mjs');
 
-  assert.ok(
-    read('README.md').includes(`${adversarial} of them adversarial`),
-    `README.md does not state ${adversarial} adversarial catalog-integrity cases`,
+  // Claimed in more than one place, and the first version of this guard only checked the
+  // README — so two mentions went stale in ARCHITECTURE and THREAT-MODEL without failing
+  // anything. Scan every file that states it.
+  const adversarialWrong = [];
+  for (const file of ['README.md', 'docs-site/quickstart.mdx', 'docs/ARCHITECTURE.md', 'docs/THREAT-MODEL.md']) {
+    for (const m of read(file).matchAll(/(\d+)\s+(?:of them\s+|of the repository's tests[^.]*?)?adversarial/g)) {
+      if (Number(m[1]) !== adversarial) adversarialWrong.push(`${file}: "${m[0]}"`);
+    }
+    for (const m of read(file).matchAll(/(\d+)\s+adversarial\s+(?:cases|tests)/g)) {
+      if (Number(m[1]) !== adversarial) adversarialWrong.push(`${file}: "${m[0]}"`);
+    }
+  }
+  assert.deepEqual(
+    adversarialWrong,
+    [],
+    `catalog-integrity.test.mjs declares ${adversarial} tests, but these say otherwise:\n  ${adversarialWrong.join('\n  ')}`,
   );
   assert.ok(
     read('README.md').includes(`${middleware} of the ${total} tests are its`),
