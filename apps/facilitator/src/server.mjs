@@ -28,6 +28,7 @@ import { x402Facilitator } from "@x402/core/facilitator";
 import { BAZAAR, validateAndExtract } from "@x402/extensions/bazaar";
 
 import { createFaucetHandler } from "./faucet.mjs";
+import { createRateLimit, rateLimitStatus } from "./rate-limit.mjs";
 import { authIdentity, remember, replayReason, seen } from "./settled-nonces.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -267,6 +268,25 @@ const feePayerSigner = createEd25519Signer(FEEPAYER_SECRET, NETWORK);
 const maxFeeFromEnv = Number(process.env.MAX_TRANSACTION_FEE_STROOPS ?? 500_000);
 const MAX_TRANSACTION_FEE_STROOPS =
   Number.isFinite(maxFeeFromEnv) && maxFeeFromEnv > 0 ? maxFeeFromEnv : 500_000;
+
+// The facilitator fee, in basis points. It is zero, and the RFP's requirement is that any
+// fee be configurable rather than hard wired — so it is read here rather than assumed,
+// documented in docs/DEPLOY.md, and reported on /health.
+//
+// Fee collection itself is Tranche 3 work, inside the audit scope, because taking a cut of
+// a settlement changes the amount a buyer authorized and that is not a change to ship
+// unaudited. Until then a non-zero value is refused at boot rather than silently ignored:
+// an operator who configures a fee and receives none has been lied to by their own config,
+// which is the failure mode FEEPAYER_SECRET is already handled this way to avoid.
+const FEE_BPS = Number.parseInt(String(process.env.FACILITATOR_FEE_BPS ?? '0'), 10) || 0;
+if (FEE_BPS !== 0) {
+  console.error(
+    `[facilitator] FACILITATOR_FEE_BPS=${FEE_BPS} but fee collection is not implemented ` +
+      `(Tranche 3, inside the audit scope). Refusing to start rather than charging nothing ` +
+      `while claiming a fee — see docs/DEPLOY.md#the-business-model.`,
+  );
+  process.exit(1);
+}
 
 const stellarScheme = new ExactStellarScheme([feePayerSigner], {
   rpcConfig: { url: STELLAR_RPC_URL },
@@ -512,6 +532,12 @@ app.get("/health", (_req, res) => {
       ...(storeStatus.error ? { error: storeStatus.error } : {}),
       ...(durableStore ? {} : { reason: storeStatus.reason }),
     },
+    // The rate-limit policy in force on /verify and /settle, so an operator or a caller
+    // can read it rather than discover it by getting a 429.
+    rateLimit: rateLimitStatus(),
+    // The fee this facilitator takes. Zero, configurable, and reported rather than
+    // assumed — a self-hoster inherits no fee from this deployment.
+    fee: { basisPoints: FEE_BPS, configurable: true, variable: "FACILITATOR_FEE_BPS" },
   });
 });
 
@@ -541,7 +567,14 @@ app.get("/supported", (_req, res) => {
   res.json({ kinds });
 });
 
-app.post("/verify", async (req, res) => {
+// The two endpoints that spend this deployment's resources: /verify simulates against
+// RPC, /settle submits and sponsors the fee. /supported, /health and /events are cheap
+// reads and stay unlimited — /supported in particular is an RFP acceptance criterion and
+// must answer a stock client unconditionally. Policy, defaults and the reasoning are in
+// docs/DEPLOY.md; set FACILITATOR_RATE_LIMIT=0 to turn it off entirely.
+const rateLimit = createRateLimit();
+
+app.post("/verify", rateLimit, async (req, res) => {
   const { paymentPayload, paymentRequirements } = readPaymentBody(req.body);
 
   if (!paymentPayload || !paymentRequirements) {
@@ -591,7 +624,7 @@ app.post("/verify", async (req, res) => {
   }
 });
 
-app.post("/settle", async (req, res) => {
+app.post("/settle", rateLimit, async (req, res) => {
   const { paymentPayload, paymentRequirements } = readPaymentBody(req.body);
 
   if (!paymentPayload || !paymentRequirements) {

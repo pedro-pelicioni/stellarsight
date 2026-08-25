@@ -1115,7 +1115,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 208 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 218 tests, 66 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 

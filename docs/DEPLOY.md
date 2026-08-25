@@ -143,6 +143,10 @@ nobody has done.
 | `FAUCET_IP_DAILY_LIMIT` | no | Grants per IP per 24h. Default `10`. IPs are hashed, never stored. |
 | `FAUCET_GLOBAL_DAILY_LIMIT` | no | Grants per day across the whole deployment. Default `200`. |
 | `FEEPAYER_PUBLIC` | no | The fee-payer **public** key (not a secret). `GET /explorer/feed` keys on it to read this deployment's settlements from Horizon; without it the feed answers `503` naming what is missing. |
+| `FACILITATOR_RATE_LIMIT` | no | Requests per window per caller on `/verify` and `/settle`. Default `120`. **`0` disables rate limiting entirely.** |
+| `FACILITATOR_RATE_WINDOW_S` | no | Length of that window, in seconds. Default `60`. |
+| `FACILITATOR_RATE_GLOBAL_LIMIT` | no | Requests per window across all callers. Default `0`, meaning no global cap. |
+| `FACILITATOR_FEE_BPS` | no | Facilitator fee in basis points. Default `0`, and reported on `/health`. Fee **collection** is Tranche 3 work inside the audit scope, so a non-zero value is refused at boot rather than silently ignored — see [The business model](#the-business-model). |
 
 ### The faucet's blast radius
 
@@ -159,6 +163,86 @@ implying a guarantee the deployment cannot make.
 
 A missing, empty or malformed value never crashes a request. A configured-but-unreachable
 store falls back to the seeded catalog and reports the failure on `/discovery/health`.
+
+### Caller authentication, metering and rate limiting
+
+The RFP leaves the mechanism to the respondent and asks for two things: that it be
+documented, and that it be configurable. Both, here.
+
+**The policy.** Testnet is deliberately open: no API key, no signup, no account. That is a
+claim this project makes in four places and it would be dishonest to make it while quietly
+gating the endpoints. There is no caller authentication on `/verify` or `/settle`, and that
+is a decision rather than an omission — the asset is a self-issued testnet token, the only
+thing an abusive caller can consume is the fee-payer's XLM, and the cure for that is a
+limit rather than a login.
+
+**The mechanism.** A fixed-window counter per caller, applied to `/verify` and `/settle`
+only. `/supported`, `/health` and `/events` are cheap reads and stay unlimited —
+`/supported` in particular is an RFP acceptance criterion and has to answer a stock client
+unconditionally. Defaults are 120 requests per 60 seconds per caller, which is far above
+anything a reviewer, a demo or the conformance harness produces, and far below what it
+takes to drain a sponsored fee-payer.
+
+The implementation is `apps/facilitator/src/rate-limit.mjs`, and it is the counter the
+faucet has been running since it shipped, generalised so the two surfaces cannot drift:
+
+- **Durable when a store is configured**, per-instance when it is not. The transport is
+  whatever `createKv()` resolves, the same Redis the catalog uses.
+- **Fails open.** If the store is unreachable the request is counted per-instance and the
+  response carries `X-RateLimit-Degraded: per-instance` instead of being refused. A limiter
+  that 500s when Redis blinks is a worse outage than the one it prevents.
+- **The raw IP is never stored or logged** — only a truncated SHA-256 of the first
+  `x-forwarded-for` hop becomes a key.
+- **A refusal is machine-readable**, like every other rejection here: `429` with
+  `Retry-After`, `code: "STELLARSIGHT_RATE_LIMITED"` and a non-null `reason` naming the
+  limit, the window and when to retry.
+
+`GET /health` reports the policy in force, so a caller can read it rather than discover it
+by being refused:
+
+```bash
+curl -s https://stellarsight.xyz/health | grep -o '"rateLimit":{[^}]*}'
+# {"rateLimit":{"enabled":true,"perCallerPerWindow":120,"globalPerWindow":null,"windowSeconds":60}}
+```
+
+To turn it off in your own deployment: `FACILITATOR_RATE_LIMIT=0`.
+
+**Metering** is the same counter read the other way round, and the honest status is that
+per-caller usage accounting — as opposed to per-caller *limiting* — is not built. It
+belongs with the per-seller identity work in Tranche 1, because metering a caller you
+cannot name is bookkeeping without a subject.
+
+### The business model
+
+Stated plainly, because the RFP asks for it and because a facilitator whose economics are
+unstated is one nobody should self-host.
+
+**Testnet is free, permanently.** There is no fee, no key and no account, and no
+environment variable can introduce one on testnet. The value of this deployment is that it
+exists and answers; charging for testnet calls would defeat the point of the public
+instance.
+
+**Mainnet defaults to a zero fee.** `FACILITATOR_FEE_BPS` defaults to `0`, so a self-hoster
+who clones this repository inherits no fee from us — the operator decides, not the software.
+That is the shape the RFP asks for: any fee configurable rather than hard wired, and
+removable.
+
+The variable is read and reported today (`GET /health` carries
+`fee: {basisPoints, configurable, variable}`), but fee *collection* is not implemented:
+taking a cut changes the amount a buyer authorized, which is not a change to ship
+unaudited, so it lands in Tranche 3 inside the audit scope. Setting a non-zero value
+therefore **fails at boot** with that explanation rather than being silently ignored — an
+operator who configures a fee and collects nothing has been lied to by their own config,
+and this repository already handles `FEEPAYER_SECRET` the same way for the same reason.
+
+**How the hosted instance is intended to sustain itself**, when it reaches mainnet: the
+operator's own sellers pay nothing, third-party settlement is expected to carry a
+low single-digit basis-point fee or none at all depending on volume, and the deliberate
+alternative to charging is that the whole thing is Apache-2.0 and self-hostable in one
+command. The second option existing is what keeps the first honest — [§11 of
+ARCHITECTURE.md](ARCHITECTURE.md#11-operating-as-a-public-good) is the longer version of
+this argument, and the RFP's own success outcome is that the ecosystem must not depend on a
+single hosted operator.
 
 ### Two ways to reach Redis, and which one you get
 

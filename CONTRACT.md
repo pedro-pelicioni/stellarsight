@@ -156,6 +156,16 @@ reasons they are easy to get wrong:
   -> `{ x402Version, resources: DiscoveryResource[], partialResults, pagination: { limit, cursor } }`
 - `EXTENSION-RESPONSES` header = base64(JSON) of `{ bazaar: { status: "success"|"processing"|"rejected", rejectedReason? } }`
 
+**`/verify` and `/settle` are rate limited; nothing else is.** Over the configured
+per-caller budget they answer `429` with `Retry-After` and
+`{ ok: false, code: "STELLARSIGHT_RATE_LIMITED", reason, scope, limit, windowSeconds,
+retryAfterSeconds }` — a transport refusal, deliberately **not** the `isValid`/`success`
+shape, because a rate limit is not a verdict about the payment. `/supported`, `/health`
+and `/events` are never limited: `/supported` is an RFP acceptance criterion and must
+answer a stock client unconditionally. Defaults are 120 requests per 60s per caller;
+`FACILITATOR_RATE_LIMIT=0` disables it. `GET /health` reports the policy in force under
+`rateLimit`, and the facilitator's fee under `fee`.
+
 **The two discovery envelopes differ deliberately, and so does their pagination.**
 `DiscoveryResourcesResponse` names the array **`items`** and paginates by
 offset/total; `SearchDiscoveryResourcesResponse` names it **`resources`** and paginates

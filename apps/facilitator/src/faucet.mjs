@@ -22,7 +22,6 @@
  * rest of this repo holds itself to.
  */
 
-import { createHash } from 'node:crypto';
 import {
   Asset,
   Horizon,
@@ -34,6 +33,9 @@ import {
 } from '@stellar/stellar-sdk';
 
 import { createKv } from '../../../packages/index/src/store.mjs';
+// One definition of "who is calling", shared with the facilitator's limiter so the two
+// surfaces cannot drift into hashing different things.
+import { clientIpHash } from './rate-limit.mjs';
 import { CORS_HEADERS, handlePreflight, readJsonBody, sendJson } from '../../../packages/index/src/serverless.mjs';
 
 /** Testnet, always. Not an env var: a faucet that can be pointed at pubnet is a wallet. */
@@ -110,13 +112,6 @@ function redisLimiter(kv) {
       return { ok: count <= cap, count };
     },
   };
-}
-
-/** First hop of x-forwarded-for, hashed. The raw address is never stored or logged. */
-function clientIpHash(req) {
-  const fwd = String(req?.headers?.['x-forwarded-for'] ?? req?.headers?.['X-Forwarded-For'] ?? '');
-  const ip = fwd.split(',')[0].trim() || req?.socket?.remoteAddress || 'unknown';
-  return createHash('sha256').update(ip).digest('hex').slice(0, 32);
 }
 
 const fail = (res, status, code, reason, extra = {}) =>
