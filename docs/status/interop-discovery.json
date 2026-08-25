@@ -1,0 +1,186 @@
+{
+  "kind": "interop-discovery",
+  "generatedAt": "2026-08-25T16:47:03.497Z",
+  "commit": "72fb52b",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "question": "Can one unmodified bazaar client read this deployment and another facilitator, and does a buyer get a constructible payment from either?",
+  "method": "The same @x402/extensions `withBazaar()` client calls listResources() against both, and every accepts entry is validated with @x402/core's own PaymentRequirementsSchema.",
+  "limitRequested": 20,
+  "targets": [
+    {
+      "key": "cdp",
+      "name": "CDP (Coinbase)",
+      "url": "https://api.cdp.coinbase.com/platform/v2/x402",
+      "role": "reference",
+      "reachable": true,
+      "elapsedMs": 918,
+      "envelopeKeys": [
+        "items",
+        "pagination",
+        "x402Version"
+      ],
+      "arrayField": "items",
+      "pagination": {
+        "limit": 20,
+        "offset": 0,
+        "total": 15271
+      },
+      "requestedLimit": 20,
+      "returnedCount": 20,
+      "honoursLimit": true,
+      "itemFields": {
+        "accepts": 20,
+        "description": 20,
+        "extensions": 20,
+        "lastUpdated": 20,
+        "quality": 20,
+        "resource": 20,
+        "type": 20,
+        "x402Version": 20
+      },
+      "acceptsFields": {
+        "amount": 40,
+        "asset": 40,
+        "currency": 40,
+        "extra": 40,
+        "maxTimeoutSeconds": 40,
+        "network": 40,
+        "payTo": 40,
+        "recipient": 40,
+        "scheme": 40
+      },
+      "acceptsChecked": 40,
+      "acceptsValid": 40,
+      "acceptsInvalid": [],
+      "resourceIsString": true
+    },
+    {
+      "key": "stellarsight",
+      "name": "STELLARSIGHT",
+      "url": "https://stellarsight.xyz",
+      "role": "deliverable",
+      "reachable": true,
+      "elapsedMs": 240,
+      "envelopeKeys": [
+        "items",
+        "limit",
+        "offset",
+        "pagination",
+        "total",
+        "x402Version"
+      ],
+      "arrayField": "items",
+      "pagination": {
+        "limit": 20,
+        "offset": 0,
+        "total": 33
+      },
+      "requestedLimit": 20,
+      "returnedCount": 20,
+      "honoursLimit": true,
+      "itemFields": {
+        "accepts": 20,
+        "asset": 20,
+        "description": 17,
+        "extensions": 20,
+        "firstSeenAt": 20,
+        "iconUrl": 12,
+        "id": 20,
+        "input": 20,
+        "lastSeenAt": 20,
+        "lastUpdated": 20,
+        "maxAmountRequired": 20,
+        "network": 20,
+        "output": 20,
+        "payTo": 20,
+        "resource": 20,
+        "routeTemplate": 4,
+        "scheme": 20,
+        "seeded": 14,
+        "serviceName": 20,
+        "settlements": 20,
+        "tags": 17,
+        "type": 20,
+        "x402Version": 20
+      },
+      "acceptsFields": {
+        "amount": 20,
+        "asset": 20,
+        "extra": 20,
+        "maxTimeoutSeconds": 20,
+        "network": 20,
+        "payTo": 20,
+        "scheme": 20
+      },
+      "acceptsChecked": 20,
+      "acceptsValid": 20,
+      "acceptsInvalid": [],
+      "resourceIsString": true
+    }
+  ],
+  "notServingDiscovery": [
+    {
+      "name": "x402.org facilitator",
+      "url": "https://x402.org/facilitator",
+      "observed": "/supported answers 200; /discovery/resources answers 404"
+    },
+    {
+      "name": "x402.rs facilitator",
+      "url": "https://facilitator.x402.rs",
+      "observed": "/supported answers 200; /discovery/resources returns HTML"
+    }
+  ],
+  "itemFieldDiff": {
+    "shared": [
+      "accepts",
+      "description",
+      "extensions",
+      "lastUpdated",
+      "resource",
+      "type",
+      "x402Version"
+    ],
+    "onlyReference": [
+      "quality"
+    ],
+    "onlyDeliverable": [
+      "asset",
+      "firstSeenAt",
+      "iconUrl",
+      "id",
+      "input",
+      "lastSeenAt",
+      "maxAmountRequired",
+      "network",
+      "output",
+      "payTo",
+      "routeTemplate",
+      "scheme",
+      "seeded",
+      "serviceName",
+      "settlements",
+      "tags"
+    ]
+  },
+  "acceptsFieldDiff": {
+    "shared": [
+      "amount",
+      "asset",
+      "extra",
+      "maxTimeoutSeconds",
+      "network",
+      "payTo",
+      "scheme"
+    ],
+    "onlyReference": [
+      "currency",
+      "recipient"
+    ],
+    "onlyDeliverable": []
+  },
+  "verdict": {
+    "oneClientParsesBoth": true,
+    "everyAcceptsEntryValidatesOnBothSides": true
+  }
+}

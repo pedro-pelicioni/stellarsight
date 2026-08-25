@@ -603,6 +603,46 @@ would hide the ranker; labelling it and making the split queryable costs nothing
 checkable. A real announcement sharing an id with a seed record promotes it and clears the
 flag.
 
+### 3.6 Interoperability, measured against another facilitator
+
+The requirement is that Stellar listings be representable consistently with listings from
+other facilitators, *so Stellar is not a walled garden*. That is a claim about somebody
+else's implementation, so it cannot be settled from inside this repository. `npm run
+verify:interop` settles it from outside: one unmodified `withBazaar()` client from
+`@x402/extensions`, pointed at this deployment and at another facilitator, with every
+`accepts` entry on both sides validated by `@x402/core`'s own `PaymentRequirementsSchema`.
+The result is published in [EVIDENCE.md](/evidence/verify-it-yourself#interoperability-one-client-two-facilitators)
+and regenerated into [`docs/status/interop-discovery.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/interop-discovery.json).
+
+The measure is deliberately not "do the two catalogs agree". They should not — one indexes
+EVM resources, the other Stellar ones, and the extension exists to let each carry its own
+extras. What is worth measuring is narrower: **one consumer reads both, and a buyer can
+construct a payment from either.** Both hold today, across 60 `accepts` entries.
+
+Three things the comparison surfaced that an argument would not have:
+
+1. **Of the public facilitators reachable today, only CDP serves the Bazaar discovery
+   endpoint at all.** `x402.org/facilitator` answers `/supported` and 404s on
+   `/discovery/resources`; `facilitator.x402.rs` returns its marketing page for the same
+   path. Interoperability of the *discovery* layer therefore has exactly one other
+   implementation to be interoperable with, which is context worth having before anyone
+   calls a divergence a Stellar problem.
+2. **The shared listing shape is seven fields** — `accepts`, `description`, `extensions`,
+   `lastUpdated`, `resource`, `type`, `x402Version` — and both sides carry all seven. Every
+   field either side adds is additive on top of that, ours included, and ours are listed in
+   the same table rather than only the other implementation's. A report that enumerates
+   only somebody else's extras is marketing.
+3. **The one field CDP carries that this catalog does not is `quality`.** It is noted rather
+   than copied: what it means is not specified anywhere we can point at, and adding a field
+   whose semantics we would be guessing at is how a catalog starts lying. The ranking signal
+   this catalog does publish — `settlements`, with its provenance label (§3.5) — is defined
+   in §4.1. Conversely the two fields CDP adds to `accepts[]`, `currency` and `recipient`,
+   duplicate `asset` and `payTo` and are not in the shipped schema.
+
+This also answers the conformance baseline the RFP's appendix suggests — pointing the same
+stock client at a reference facilitator and at the deliverable — with the artifact rather
+than with a plan to build one.
+
 ---
 
 ## 4. Search
@@ -1057,13 +1097,16 @@ all permissive, nothing unknown — is published in
 | | Golden set to 150–200 queries + rolling live sample | §4.2 |
 | | Wire shape locked by golden tests on all three surfaces | §3.2 |
 | | Nightly stock-client conformance in public CI | §5.3 |
-| **T2** ($26,700, ~12 weeks) | Discovery-side requirements into the open `upto` spec | §6.1 |
+| **T2** ($26,700, ~12 weeks) | Discovery-side requirements into the open `upto` spec, coordinated through the x402 **Technical Steering Committee** | §6.1 |
+| | **§5.4** — we propose implementing #3134 rather than authoring a fourth `scheme_upto_stellar.md`; if the TSC prefers that we author one, T2 absorbs it at no change in cost | §6.1 |
 | | `upto` implemented as standardized + a published interop report | §6.3 |
 | | Metered pricing in the catalog: ceiling vs price, budget filters, value-weighted ranking | §6.3 |
 | | Monitoring plan becomes a running system with alerts | §8 |
 | | CPU-only semantic layer, measured by the T1 harness | §4.3 |
 | | Hosted HTTP MCP + TS/Go/Python adapter tests | §5.1 |
-| | Auth-entry-shaped signer interface for smart accounts | §2.2 |
+| | Contributed x402-on-Stellar pages to the Stellar Developer Docs (§5.7) | §5.3 |
+| | Auth-entry signing shape agreed with wallet teams before the signer ships (§4.6) | §2.2 |
+| | Auth-entry-shaped signer interface for smart accounts — classic keypairs today, custom `__check_auth` accounts in scope here | §2.2 |
 | **T3** ($35,600, mainnet ~month 4) | `stellar:pubnet` with Circle USDC | §9.2 |
 | | 30 days measured uptime + public status page | §8 |
 | | Security-review remediation (Audit Bank; fee excluded) | §7 |
@@ -1118,7 +1161,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 218 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 224 tests, 66 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 

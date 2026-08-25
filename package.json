@@ -39,6 +39,7 @@
     "demo:agent": "node apps/agent/src/cli.mjs",
     "mcp": "node apps/agent/src/mcp-server.mjs",
     "check:bazaar": "node scripts/check-bazaar-client.mjs",
+  "verify:interop": "node scripts/interop-discovery.mjs",
     "docs:sync": "node scripts/sync-docs-site.mjs"
   },
   "dependencies": {

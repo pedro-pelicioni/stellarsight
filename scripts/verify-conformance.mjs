@@ -37,6 +37,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
 import { writeEvidence, updateProvenance, appendTxRows } from "./lib/evidence.mjs";
+import { decodePaymentHeader, payloadShape } from "./lib/payment-shape.mjs";
 
 import { wrapFetchWithPayment, x402Client, decodePaymentResponseHeader } from "@x402/fetch";
 import { decodePaymentRequiredHeader } from "@x402/core/http";
@@ -200,7 +201,22 @@ try {
 info(`payer ${signer.address}`);
 
 const client = new x402Client().register(NETWORK, new ExactStellarScheme(signer, { url: RPC_URL }));
-const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+
+// Capture what the STOCK client puts on the wire, so the payload-shape criterion is an
+// observation rather than a belief about what the library does. This wrapper does not
+// alter the request — it reads a header on the way past.
+let sentPaymentHeader = null;
+const observingFetch = (url, init = {}) => {
+  try {
+    const headers = new Headers(init.headers ?? {});
+    const sent = headers.get("PAYMENT-SIGNATURE") ?? headers.get("X-PAYMENT");
+    if (sent) sentPaymentHeader = sent;
+  } catch {
+    /* an exotic init shape must never break the payment itself */
+  }
+  return fetch(url, init);
+};
+const fetchWithPayment = wrapFetchWithPayment(observingFetch, client);
 
 const started = Date.now();
 let response;
@@ -263,6 +279,24 @@ record(
   "decoded",
 );
 record("settle-success", "settlement reports success", "success=true", `success=${settle.success}`);
+
+// RFP acceptance criterion: the Stellar payload is `{ transaction }` and the facilitator
+// takes it verbatim. It was implied by a green stock-client run and named nowhere, which
+// means a reviewer grepping for it found nothing. Named here, and observed from the header
+// the unmodified client actually sent.
+{
+  const shape = payloadShape(decodePaymentHeader(sentPaymentHeader));
+  record(
+    "payload-transaction-verbatim",
+    "the stock client sends `payload: { transaction }` and the facilitator settles it verbatim",
+    "payload keys exactly [transaction], settled",
+    shape.observed
+      ? `payload keys [${shape.keys.join(", ")}], settled=${settle.success === true}`
+      : "payment header not observed",
+    shape.verbatim && settle.success === true,
+  );
+  if (shape.verbatim) ok("payload is `{ transaction }`, accepted verbatim");
+}
 
 const txHash = String(settle.transaction ?? "").trim();
 if (!/^[0-9a-f]{64}$/i.test(txHash)) die(`Settlement carried no usable transaction hash (got ${JSON.stringify(settle.transaction)}).`, null, "tx-hash");

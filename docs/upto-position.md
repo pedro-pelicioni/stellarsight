@@ -134,6 +134,15 @@ implementation with a published interop report** — three implementations exist
 no two have been tested against each other, so interoperability is currently an assertion
 rather than a measured property; and the catalog-side implementation of the same shape.
 
+**On process, and on deliverable 5.4.** The RFP asks for a `scheme_upto_stellar.md` and asks
+that upstream contribution be coordinated through the x402 **Technical Steering Committee**.
+Not authoring a fourth private spec is a decision, not an oversight, and it should be legible
+as one: #3134 already proposes the binding, a fourth draft would add a data point rather than
+a decision, and consolidation is the thing the thread is short of. So the position we take to
+the TSC is *implement the standard rather than fork it* — and if the committee would rather we
+author `scheme_upto_stellar.md`, Tranche 2 absorbs that at no change in cost or timeline. It
+is written down here so the choice is reversible by someone other than us.
+
 One process note, recorded because it is the more useful half of this exchange: we were
 wrong twice in public and said so in the thread within hours, rather than defending the
 positions. A design document that only preserves the arguments its author won is not

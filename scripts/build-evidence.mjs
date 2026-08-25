@@ -199,6 +199,7 @@ const nightly = readEvidence('nightly');
 const upstreamE2e = readEvidence('upstream-e2e');
 const footprint = readEvidence('soroban-footprint');
 const licenses = readEvidence('licenses');
+const interop = readEvidence('interop-discovery');
 
 const labelCounts = {};
 for (const meta of Object.values(provenance?.hashes ?? {})) {
@@ -471,6 +472,47 @@ if (footprint?.used && footprint?.limits) {
   w();
   w(`Memory is the one row without a measurement: ${footprint.memoryNote}`);
   w();
+}
+
+/* ── interoperability ─────────────────────────────────────────────────────── */
+
+if (interop?.targets?.length) {
+  const reachable = interop.targets.filter((t) => t.reachable);
+  w('## Interoperability: one client, two facilitators');
+  w();
+  w('The same unmodified `withBazaar()` client from `@x402/extensions`, pointed at this');
+  w("deployment and at another facilitator, with every `accepts` entry validated by");
+  w("`@x402/core`'s own `PaymentRequirementsSchema`. Regenerate with");
+  w('`npm run verify:interop`.');
+  w();
+  w('| Facilitator | Role | Items | Array field | `accepts` validating |');
+  w('|---|---|---|---|---|');
+  for (const t of reachable) {
+    w(`| [${t.name}](${t.url}) | ${t.role} | ${t.returnedCount} | \`${t.arrayField}\` | ${t.acceptsValid}/${t.acceptsChecked} |`);
+  }
+  w();
+  const fmt = (list) => (list?.length ? list.map((f) => `\`${f}\``).join(', ') : '—');
+  const ref = interop.targets[0];
+  const del = interop.targets[1];
+  w('| Fields | On both | Only ' + ref.name + ' | Only ' + del.name + ' |');
+  w('|---|---|---|---|');
+  w(`| Listing | ${fmt(interop.itemFieldDiff?.shared)} | ${fmt(interop.itemFieldDiff?.onlyReference)} | ${fmt(interop.itemFieldDiff?.onlyDeliverable)} |`);
+  w(`| \`accepts[]\` | ${fmt(interop.acceptsFieldDiff?.shared)} | ${fmt(interop.acceptsFieldDiff?.onlyReference)} | ${fmt(interop.acceptsFieldDiff?.onlyDeliverable)} |`);
+  w();
+  w(
+    `**One client parses both: ${interop.verdict?.oneClientParsesBoth ? 'yes' : 'no'}. ` +
+      `Every \`accepts\` entry validates on both sides: ${interop.verdict?.everyAcceptsEntryValidatesOnBothSides ? 'yes' : 'no'}.** ` +
+      'The two catalogs are not expected to agree — one indexes EVM resources and the other ' +
+      'Stellar ones — so what is measured is whether a single consumer can read both and ' +
+      'construct a payment from either.',
+  );
+  w();
+  if (interop.notServingDiscovery?.length) {
+    w('Facilitators checked that do **not** serve the Bazaar discovery endpoint today:');
+    w();
+    for (const n of interop.notServingDiscovery) w(`- **${n.name}** (${n.url}) — ${n.observed}`);
+    w();
+  }
 }
 
 /* ── dependency licences ──────────────────────────────────────────────────── */
