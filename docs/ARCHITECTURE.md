@@ -1058,7 +1058,7 @@ sponsor-account balance alerting before mainnet.
 
 ### 7.4 Residual risk, stated plainly
 
-One author on the commit history so far (the award funds three engineers full-time, scopes split in the submission), no external audit yet, testnet only, and a single shared write token that
+A three-engineer team with the commit history so far concentrated in one author, no external audit yet, testnet only, and a single shared write token that
 is adequate for a demo catalog and inadequate for a public index with third-party sellers.
 Each has a named mitigation and a tranche.
 
