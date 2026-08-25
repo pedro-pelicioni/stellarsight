@@ -13,6 +13,8 @@
 import { readFileSync } from 'node:fs';
 
 import { fetchSettlementFeed, labelRows } from '../../packages/index/src/settlements.mjs';
+import { readInferredProvenance } from '../../packages/index/src/provenance-store.mjs';
+import { createKv } from '../../packages/index/src/store.mjs';
 import { getState, handlePreflight, readQuery, sendJson } from '../../packages/index/src/serverless.mjs';
 
 const MEMO_TTL_MS = 60_000;
@@ -90,6 +92,18 @@ export default async function handler(req, res) {
       /* the listing join is a nice-to-have; the settlements are the point */
     }
 
+    // Labels the live stack recorded for traffic it settled itself. Kept separate from the
+    // committed map on purpose — a script's assertion outranks the facilitator's inference,
+    // and labelRows reports which is which. An unreachable store yields `{}`, which means
+    // more rows render as `unlabeled`: degraded in the unflattering direction, which is the
+    // only direction this feed is allowed to degrade in.
+    let inferred = {};
+    try {
+      inferred = await readInferredProvenance(createKv(process.env), feed.rows.map((r) => r.txHash));
+    } catch {
+      /* no live labels — the committed map still applies */
+    }
+
     memo = {
       at: Date.now(),
       limit,
@@ -100,7 +114,7 @@ export default async function handler(req, res) {
         feePayer,
         scope: 'settlements performed by this deployment, read from Horizon — not an index of all x402 operators',
         fetchedAt: feed.fetchedAt,
-        rows: labelRows(feed.rows, { provenance: provenance(), records }),
+        rows: labelRows(feed.rows, { provenance: provenance(), inferred, records }),
       },
     };
   }

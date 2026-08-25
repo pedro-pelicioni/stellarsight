@@ -30,6 +30,10 @@ import { BAZAAR, validateAndExtract } from "@x402/extensions/bazaar";
 import { createFaucetHandler } from "./faucet.mjs";
 import { createRateLimit, rateLimitStatus } from "./rate-limit.mjs";
 import { authIdentity, remember, replayReason, seen } from "./settled-nonces.mjs";
+import {
+  fundedByFaucet,
+  recordInferredProvenance,
+} from "../../../packages/index/src/provenance-store.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "..", "..");
@@ -158,6 +162,22 @@ try {
 
 let durableStore = null;
 let storeStatus = { configured: false, reason: "no durable store configured" };
+
+// The same key-value transport the faucet and the rate limiter use, resolved once and
+// lazily so an unconfigured deployment simply has no live provenance rather than failing
+// at boot. Separate from `durableStore`, which is the catalog's snapshot store.
+let provenanceKvCache;
+async function provenanceKv() {
+  if (provenanceKvCache === undefined) {
+    try {
+      const mod = await import("../../../packages/index/src/store.mjs");
+      provenanceKvCache = mod.createKv(process.env) ?? null;
+    } catch {
+      provenanceKvCache = null;
+    }
+  }
+  return provenanceKvCache;
+}
 
 try {
   const storeMod = await import("../../../packages/index/src/store.mjs");
@@ -689,6 +709,32 @@ app.post("/settle", rateLimit, async (req, res) => {
       if (!noted.ok) {
         // Losing this record costs a future replay its precise name, nothing more.
         emit({ type: "settle", ok: true, detail: `settled; nonce not recorded: ${noted.reason}` });
+      }
+    }
+
+    // --- provenance for traffic THIS deployment settles ---
+    //
+    // docs/status/provenance.json only covers payments a script generated, and the feed
+    // reads it out of the deployed bundle — so anything settled through the hosted stack
+    // after the last commit had no way to be labelled and rendered as `unlabeled`. Honest,
+    // but it left the default carrying most of the public feed.
+    //
+    // The one thing this can honestly attribute is a payer whose money came out of our own
+    // public faucet: that makes the payment demo traffic rather than demand. It is an
+    // inference, it is recorded as one, and a script's assertion always outranks it.
+    if (success && transaction) {
+      try {
+        const kv = await provenanceKv();
+        if (kv && (await fundedByFaucet(kv, payer))) {
+          await recordInferredProvenance(kv, transaction, "demo", {
+            basis: "payer was funded by this deployment's public faucet",
+            payer,
+          });
+        }
+      } catch (e) {
+        // Labelling must never cost a settlement, and an unlabelled row is the safe
+        // outcome anyway.
+        emit({ type: "settle", ok: true, detail: `settled; provenance not recorded: ${e?.message ?? e}` });
       }
     }
 

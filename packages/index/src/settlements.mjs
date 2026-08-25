@@ -9,8 +9,11 @@
  *
  * Scope, stated because it is easy to overclaim: this reads OUR activity, not the
  * ledger's. It is not a cross-operator index and the UI says so. What it can do that a
- * cross-operator index cannot is tell you WHY each payment exists, because the scripts
- * that generated them recorded it (docs/status/provenance.json).
+ * cross-operator index cannot is tell you WHY each payment exists: the scripts that
+ * generated a payment recorded it (docs/status/provenance.json), and for traffic the
+ * live stack settled after that file was last written, the facilitator records what it
+ * could attribute at settle time — marked `inferred`, never merged with the recorded
+ * ones (see labelRows).
  *
  * Pure functions with an injectable `fetch`, so the whole thing is testable offline.
  */
@@ -109,12 +112,22 @@ export async function fetchSettlementFeed({
 }
 
 /**
- * labelRows(rows, { provenance, records })
+ * labelRows(rows, { provenance, inferred, records })
  *
- * Two joins, both conservative:
+ * Three joins, all conservative, and the first two are deliberately not merged:
  *
- *   provenance — the hash -> label map the scripts wrote. A hash that is not in the map
- *                is `unlabeled`, NEVER `organic`: we cannot prove a payment came from
+ *   provenance — the hash -> label map the scripts wrote. The script that generated a
+ *                payment knows why it exists and asserts it, so these are `recorded`.
+ *
+ *   inferred   — what the live stack could attribute at settle time, from the durable
+ *                store. Today that is one inference: the payer's money came out of our own
+ *                public faucet, so the payment is demo traffic rather than demand. It is
+ *                weaker evidence than an assertion and the row says so (`source:
+ *                'inferred'`) rather than passing it off as a record. A recorded label
+ *                always wins over an inferred one.
+ *
+ *                Neither ever upgrades an unknown hash: a hash in neither map is
+ *                `unlabeled`, NEVER `organic`. We cannot prove a payment came from
  *                outside, and claiming it did would be exactly the overstatement this
  *                whole feed exists to avoid.
  *
@@ -122,10 +135,17 @@ export async function fetchSettlementFeed({
  *                heuristic, so the row says so (`matchedBy: 'price'`) and the UI prints
  *                it, rather than presenting an inference as a record.
  */
-export function labelRows(rows, { provenance = {}, records = [] } = {}) {
+export function labelRows(rows, { provenance = {}, inferred = {}, records = [] } = {}) {
   return rows.map((row) => {
-    const known = provenance[row.txHash];
-    const label = known && KNOWN_LABELS.includes(known.label) ? known.label : 'unlabeled';
+    const recorded = provenance[row.txHash];
+    const guessed = inferred[row.txHash];
+    const known =
+      recorded && KNOWN_LABELS.includes(recorded.label)
+        ? { entry: recorded, source: 'recorded' }
+        : guessed && KNOWN_LABELS.includes(guessed.label)
+          ? { entry: guessed, source: 'inferred' }
+          : null;
+    const label = known ? known.entry.label : 'unlabeled';
 
     let listing = null;
     if (row.to && row.amount) {
@@ -143,7 +163,16 @@ export function labelRows(rows, { provenance = {}, records = [] } = {}) {
       }
     }
 
-    return { ...row, scheme: 'exact', provenance: { label, source: known ? 'recorded' : 'absent' }, listing };
+    return {
+      ...row,
+      scheme: 'exact',
+      provenance: {
+        label,
+        source: known ? known.source : 'absent',
+        ...(known?.source === 'inferred' && known.entry.basis ? { basis: known.entry.basis } : {}),
+      },
+      listing,
+    };
   });
 }
 

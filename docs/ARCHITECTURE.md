@@ -600,6 +600,38 @@ would hide the ranker; labelling it and making the split queryable costs nothing
 checkable. A real announcement sharing an id with a seed record promotes it and clears the
 flag.
 
+**Why each settled payment exists, and the two grades of that answer.** A settled count is
+not a demand signal until you can say who generated it. Every payment this project produces
+therefore records a reason from a closed set — `setup`, `demo`, `conformance`,
+`scripted-load`, `nightly-ci` — and the rule that does the real work is the default, not the
+labels: *an unlisted hash renders as `unlabeled`, never as `organic`.* We cannot prove a
+payment came from outside, and claiming it did is the overstatement the whole feed exists to
+avoid.
+
+That map ([`docs/status/provenance.json`](status/provenance.json)) is written by the scripts
+that generate the traffic, and the feed reads it out of the deployed bundle. Which left a
+hole worth naming, because it was visible: a payment settled through the **hosted** stack
+after the last commit had no way to be labelled at all, so on the public feed the majority
+of recent rows were `unlabeled`. The default was honest and was carrying far more of the
+feed than it should have.
+
+The live stack now records what it can attribute at settle time, and the two are
+deliberately **not** merged:
+
+| | Written by | Evidence | Rendered as |
+|---|---|---|---|
+| **Recorded** | the script that generated the payment | the author asserts the reason, and can be held to it | `source: "recorded"` |
+| **Inferred** | the facilitator, at settle time | the payer's money came out of *our own public faucet*, so the payment is demo traffic rather than demand | `source: "inferred"`, with its `basis` |
+
+A recorded label always outranks an inferred one; a label outside the closed set is refused
+from either; and neither can promote an unknown hash. Every store failure lands on
+`unlabeled` — this feed is only allowed to degrade in the unflattering direction.
+
+The distinction is the point rather than a technicality. A label is an operator asserting a
+reason, which is falsifiable against the ledger. An inference is the facilitator guessing
+from what it can see, and a catalog that presents the second as the first is how counters
+start meaning less than they appear to.
+
 ### 3.6 Interoperability, measured against another facilitator
 
 The requirement is that Stellar listings be representable consistently with listings from
@@ -1158,7 +1190,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 224 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 235 tests, 66 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 
