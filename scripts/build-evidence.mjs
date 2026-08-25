@@ -21,6 +21,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { STATUS_DIR, readEvidence, updateProvenance } from './lib/evidence.mjs';
+import { deriveCounts } from './lib/counts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'docs', 'EVIDENCE.md');
@@ -214,6 +215,33 @@ const totalLabeled = Object.values(labelCounts).reduce((a, b) => a + b, 0);
 if (tally) {
   const readme = retallyReadme(tally, labelCounts);
   if (readme?.changed) console.log('[build-evidence] rewrote the README tally and badge');
+}
+
+// The landing page's proof strip. `SETTLED_PAYMENTS` there has always been derived from
+// testnet-txs.json and has always been right; the three counts beside it were hand-typed and
+// were wrong — the site was still publishing 205 tests, 66 adversarial cases and 46 API checks
+// after the docs had moved to 239, 70 and 49. Writing them here puts them on the same footing
+// as every other number this project publishes: generated, and stale only if nobody runs the
+// generator.
+{
+  const counts = deriveCounts();
+  const path = join(ROOT, 'apps', 'web', 'src', 'data', 'counts.json');
+  const body = `${JSON.stringify(
+    {
+      note: 'Derived by scripts/lib/counts.mjs via npm run evidence:build. Do not hand-edit.',
+      ...counts,
+    },
+    null,
+    2,
+  )}\n`;
+  const prior = existsSync(path) ? readFileSync(path, 'utf8') : null;
+  if (prior !== body) {
+    writeFileSync(path, body, 'utf8');
+    console.log(
+      `[build-evidence] wrote apps/web/src/data/counts.json — ${counts.tests} tests, ` +
+        `${counts.adversarial} adversarial, ${counts.apiChecks} API checks`,
+    );
+  }
 }
 
 const accounts = accountsFromTxDoc();

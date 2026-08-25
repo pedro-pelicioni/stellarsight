@@ -10,6 +10,7 @@ import { DitherField } from '../components/DitherField'
 import { DottedGlobe } from '../components/DottedGlobe'
 import { OrbitRing } from '../components/OrbitRing'
 import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
+import counts from '../data/counts.json'
 import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
 import type { Catalog } from '../lib/types'
@@ -44,19 +45,23 @@ const miniLedger = (() => {
 const HERO_CMD: CodeSpan[] = [
   { text: '$ ', className: 't-p', copy: false },
   {
-    text: "curl 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3'",
+    text: "curl 'https://stellarsight.xyz/discovery/search?query=fx%20rate&limit=3'",
     className: 't-cmd',
   },
 ]
 
 /**
- * Counts a visitor can falsify by running the command printed beside them, so they are
- * declared once and rendered from here in both the proof strip and the verify block. The
- * page previously carried a hand-typed 84 in the strip and 129 in the block, for the same
- * `npm test`, eighty lines apart.
+ * Counts a visitor can falsify by running the command printed beside them. They used to be
+ * typed here, which failed twice: first as a hand-typed 84 in the strip and 129 in the block
+ * for the same `npm test`, eighty lines apart; then as 205 tests and 46 API checks that stayed
+ * on the live site after the repository had moved to 239 and 49.
+ *
+ * They now come from `apps/web/src/data/counts.json`, written by `npm run evidence:build` from
+ * `scripts/lib/counts.mjs`, which derives them from the test files and the conformance harness
+ * themselves. `test/docs-consistency.test.mjs` fails the build if this file falls behind.
  */
-const TEST_COUNT = 205
-const API_CHECKS = 46
+const TEST_COUNT = counts.tests
+const API_CHECKS = counts.apiChecks
 /**
  * Counted from the receipts, not typed in. This number moves every time a batch or a
  * nightly run settles, and a hand-written one silently understated it for two weeks —
@@ -68,7 +73,7 @@ const API_CHECKS = 46
  */
 const SETTLED_PAYMENTS = testnetTxs.filter((t) => /^(demo|conformance|load)/i.test(t.label ?? '')).length
 /** Of API_CHECKS, the ones driven through the unmodified @x402/extensions client. */
-const STOCK_CLIENT_CHECKS = 9
+const STOCK_CLIENT_CHECKS = counts.stockClientChecks
 
 /** The three verification commands, declared once: the block renders them aligned
  *  with their comments, the copy button ships the bare commands. */
@@ -112,17 +117,17 @@ function Terminal() {
           {'\n    '}
           <span className="t-key">"resource"</span>
           <span className="t-dim">: </span>
-          <span className="t-str">"https://api.documents.example/v1/invoice-ocr"</span>
+          <span className="t-str">"https://stellarsight.xyz/v1/fx/usd-brl"</span>
           <span className="t-dim">,</span>
           {'\n    '}
           <span className="t-key">"serviceName"</span>
           <span className="t-dim">: </span>
-          <span className="t-str">"Invoice OCR"</span>
+          <span className="t-str">"stellarsight-fx"</span>
           <span className="t-dim">,</span>
           {'\n    '}
           <span className="t-key">"_score"</span>
           <span className="t-dim">: </span>
-          <span className="t-num">0.7736</span>
+          <span className="t-num">0.6859</span>
           <span className="t-dim">,</span>
           {'\n    '}
           <span className="t-key">"accepts"</span>
@@ -139,12 +144,12 @@ function Terminal() {
           {'\n      '}
           <span className="t-key">"amount"</span>
           <span className="t-dim">: </span>
-          <span className="t-str">"15000"</span>
+          <span className="t-str">"100000"</span>
           <span className="t-dim">,</span>
           {'\n      '}
           <span className="t-key">"payTo"</span>
           <span className="t-dim">: </span>
-          <span className="t-str">"GDQN…KTL3"</span>
+          <span className="t-str">"GCWH…KG3O"</span>
           <span className="t-dim"> {'}'}]</span>
           {'\n  '}
           <span className="t-dim">{'}'}, </span>
@@ -152,7 +157,7 @@ function Terminal() {
           {'\n  '}
           <span className="t-key">"partialResults"</span>
           <span className="t-dim">: </span>
-          <span className="t-num">false</span>
+          <span className="t-num">true</span>
           <span className="t-dim">,</span>
           {'\n  '}
           <span className="t-key">"pagination"</span>
@@ -163,7 +168,7 @@ function Terminal() {
           <span className="t-dim">, </span>
           <span className="t-key">"cursor"</span>
           <span className="t-dim">: </span>
-          <span className="t-num">null</span>
+          <span className="t-str">"eyJvIjozLCJmIjoiemhqaTRsIn0"</span>
           <span className="t-dim"> {'}'}</span>
           {'\n'}
           <span className="t-dim">{'}'}</span>
@@ -305,7 +310,9 @@ export default function Landing() {
                 </div>
                 <div className="proof__cell">
                   <span className="proof__n">{TEST_COUNT}</span>
-                  <span className="proof__l">tests, 0 failing — 66 of them adversarial</span>
+                  <span className="proof__l">
+                    tests, 0 failing — {counts.adversarial} of them adversarial
+                  </span>
                 </div>
                 <div className="proof__cell">
                   <span className="proof__n">{API_CHECKS}</span>
@@ -573,7 +580,7 @@ export default function Landing() {
                 <StarGlyph /> On testnet
               </span>
               <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
-                Verify it in <em>60 seconds.</em>
+                Verify it <em>yourself.</em>
               </h2>
               <p className="prose section__sub rise" style={{ ['--i' as string]: 2 }}>
                 Nothing here asks for trust. Every hash on the right is a real transaction this

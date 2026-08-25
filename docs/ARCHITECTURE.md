@@ -27,7 +27,7 @@ sentence rather than in a footnote.
 9. [Deployment topology](#9-deployment-topology)
 10. [Architecture mapped to the funded tranches](#10-architecture-mapped-to-the-funded-tranches)
 11. [Operating as a public good](#11-operating-as-a-public-good)
-- [Appendix A — Verify this in 60 seconds](#appendix-a--verify-this-in-60-seconds)
+- [Appendix A — Verify this yourself](#appendix-a--verify-this-yourself)
 - [Appendix B — Repository map](#appendix-b--repository-map)
 
 ---
@@ -1204,18 +1204,18 @@ runs against the live stack.
 
 ---
 
-## Appendix A — Verify this in 60 seconds
+## Appendix A — Verify this yourself
 
-| Claim | Check | Time |
-|---|---|---|
-| Payments settle on Stellar | open any hash in [TESTNET-TXS.md](TESTNET-TXS.md) → `successful: true` | 10s |
-| The buyer needs zero XLM | on that transaction, `fee_account` is the facilitator's FEEPAYER, not the payer | 15s |
-| The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
-| Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
-| Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 239 tests, 70 adversarial | 30s |
-| A stock client can pay us | `npm run verify:conformance` | 60s |
-| The concurrency limit is real | `npm run load:baseline` | 2m |
+| Claim | Check |
+|---|---|
+| Payments settle on Stellar | open any hash in [TESTNET-TXS.md](TESTNET-TXS.md) → `successful: true` |
+| The buyer needs zero XLM | on that transaction, `fee_account` is the facilitator's FEEPAYER, not the payer |
+| The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit |
+| Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` |
+| Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate |
+| Integrity is real | `npm test` → 240 tests, 70 adversarial |
+| A stock client can pay us | `npm run verify:conformance` |
+| The concurrency limit is real | `npm run load:baseline` |
 
 ## Appendix B — Repository map
 

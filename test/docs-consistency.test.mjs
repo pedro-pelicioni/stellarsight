@@ -18,6 +18,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { deriveCounts } from '../scripts/lib/counts.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
@@ -67,8 +69,7 @@ test('every stated conformance-check count matches the checks that exist', () =>
   // The count published everywhere is what `npm run verify:api` prints, and that is one
   // `check(...)` call site per check. Counting the call sites derives it without booting
   // the handlers, which is what makes this cheap enough to run in the unit suite.
-  const harness = read('scripts/verify-serverless.mjs');
-  const n = [...harness.matchAll(/^\s*(?:await\s+)?check\(/gm)].length;
+  const n = deriveCounts().apiChecks;
   assert.ok(
     n > 0,
     'no check() call sites found in scripts/verify-serverless.mjs — the harness shape changed, ' +
@@ -178,4 +179,42 @@ test('every stated test count matches the tests that exist', () => {
     read('README.md').includes(`${middleware} of the ${total} tests are its`),
     `README.md does not state ${middleware} of the ${total} tests as packages/express`,
   );
+});
+
+test('the landing page publishes the counts the repository actually has', () => {
+  // The gap this closes was visible in production: the site's proof strip was still showing
+  // 205 tests, 66 adversarial cases and 46 API conformance checks after the docs had been
+  // corrected to 239, 70 and 49. The guard above covers README.md, docs/ and docs-site/ — it
+  // did not cover apps/web, so the number a reviewer sees FIRST was the one nothing checked.
+  //
+  // apps/web now reads them from a generated artifact instead of hand-typing them. This
+  // asserts the artifact is current: adding a test without re-running `npm run evidence:build`
+  // fails here rather than shipping a stale number to the landing page.
+  const derived = deriveCounts();
+  const published = JSON.parse(read('apps/web/src/data/counts.json'));
+
+  for (const key of ['tests', 'adversarial', 'apiChecks', 'stockClientChecks']) {
+    assert.equal(
+      published[key],
+      derived[key],
+      `apps/web/src/data/counts.json is stale: ${key} says ${published[key]}, the repository has ` +
+        `${derived[key]}. Run \`npm run evidence:build\` and commit the result.`,
+    );
+  }
+
+  // And the page has to actually read the artifact rather than reintroducing a literal.
+  const landing = read('apps/web/src/routes/Landing.tsx');
+  assert.match(landing, /import counts from '\.\.\/data\/counts\.json'/, 'Landing.tsx no longer imports the generated counts');
+  for (const [name, expr] of [
+    ['TEST_COUNT', 'counts.tests'],
+    ['API_CHECKS', 'counts.apiChecks'],
+    ['STOCK_CLIENT_CHECKS', 'counts.stockClientChecks'],
+  ]) {
+    assert.match(
+      landing,
+      new RegExp(`const ${name} = ${expr.replace('.', '\\.')}\\b`),
+      `${name} in Landing.tsx is not read from the generated counts`,
+    );
+  }
+  assert.match(landing, /\{counts\.adversarial\} of them adversarial/, 'the adversarial count on the proof strip is hand-typed again');
 });
