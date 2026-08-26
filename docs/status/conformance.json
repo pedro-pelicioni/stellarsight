@@ -1,7 +1,7 @@
 {
   "kind": "conformance",
-  "generatedAt": "2026-08-25T07:27:27.168Z",
-  "commit": "5c97451",
+  "generatedAt": "2026-08-26T07:28:49.477Z",
+  "commit": "89d8d89",
   "node": "v22.23.2",
   "network": "stellar:testnet",
   "ok": true,
@@ -9,15 +9,15 @@
   "route": "/v1/fx/usd-brl",
   "method": "GET",
   "client": "@x402/fetch wrapFetchWithPayment (unmodified)",
-  "payer": "GCMQAPC3HUFRWD7MLFVI5LYVCNKZ6SAGVALTTRYK6ESIP6JRC47HIYAL",
+  "payer": "GAIP6O46NXSRKMG4RHU73VG5PNXZ7L3GCO7YRGYCWC4NSOUGC5X25MZY",
   "amount": "100000",
   "amountDisplay": "0.01 SXT",
   "assetCode": "SXT",
   "asset": "CAYCPWN5YZEHKPGZOXGU3O7R2Q5H7LT7SZ45YIO26VMFM47VBUHOGPO2",
   "scheme": "exact",
-  "txHash": "73375611ef4bec7d4e3196861a228e90733a9f5a8e1a784d76a5486518eeacc2",
-  "explorerUrl": "https://stellar.expert/explorer/testnet/tx/73375611ef4bec7d4e3196861a228e90733a9f5a8e1a784d76a5486518eeacc2",
-  "elapsedMs": 7050,
+  "txHash": "eef8f3b5fdb23c81348509655e52e4d8ec17654be7df2540752a41fb0cff2c94",
+  "explorerUrl": "https://stellar.expert/explorer/testnet/tx/eef8f3b5fdb23c81348509655e52e4d8ec17654be7df2540752a41fb0cff2c94",
+  "elapsedMs": 6984,
   "criteria": [
     {
       "id": "unpaid-402",
@@ -51,7 +51,7 @@
       "id": "stock-client-200",
       "name": "an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200",
       "expected": "HTTP 200",
-      "observed": "HTTP 200 in 7050ms",
+      "observed": "HTTP 200 in 6984ms",
       "pass": true
     },
     {
@@ -69,10 +69,17 @@
       "pass": true
     },
     {
+      "id": "payload-transaction-verbatim",
+      "name": "the stock client sends `payload: { transaction }` and the facilitator settles it verbatim",
+      "expected": "payload keys exactly [transaction], settled",
+      "observed": "payment header not observed",
+      "pass": false
+    },
+    {
       "id": "tx-hash",
       "name": "the receipt carries a settled transaction hash",
       "expected": "64-hex transaction hash",
-      "observed": "73375611ef4bec7d4e3196861a228e90733a9f5a8e1a784d76a5486518eeacc2",
+      "observed": "eef8f3b5fdb23c81348509655e52e4d8ec17654be7df2540752a41fb0cff2c94",
       "pass": true
     }
   ]

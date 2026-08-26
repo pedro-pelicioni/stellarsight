@@ -1,11 +1,11 @@
 {
   "kind": "soroban-footprint",
-  "generatedAt": "2026-08-25T16:25:38.445Z",
-  "commit": "3124b98",
-  "node": "v22.22.3",
+  "generatedAt": "2026-08-26T07:28:50.042Z",
+  "commit": "89d8d89",
+  "node": "v22.23.2",
   "network": "stellar:testnet",
-  "txHash": "73375611ef4bec7d4e3196861a228e90733a9f5a8e1a784d76a5486518eeacc2",
-  "ledger": 4323937,
+  "txHash": "eef8f3b5fdb23c81348509655e52e4d8ec17654be7df2540752a41fb0cff2c94",
+  "ledger": 4341198,
   "shape": {
     "feeBumped": true,
     "operations": 1,
