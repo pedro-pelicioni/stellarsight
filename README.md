@@ -15,7 +15,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 [![network: stellar:testnet](https://img.shields.io/badge/network-stellar%3Atestnet-brightgreen)](docs/TESTNET-TXS.md)
-[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-97-blue)](docs/TESTNET-TXS.md)
+[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-98-blue)](docs/TESTNET-TXS.md)
 [![tests](https://img.shields.io/badge/tests-205,_0_failing-brightgreen)](#running-it)
 [![nDCG@10](https://img.shields.io/badge/nDCG%4010-0.864_measured-blue)](docs/SEARCH-EVAL.md)
 
@@ -468,13 +468,13 @@ Real hashes produced by this code, with explorer links:
 [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md).
 
 <!-- evidence:tally — rewritten by `npm run evidence:build`; do not hand-edit the numbers -->
-105 in total, and the split matters: **97 are x402 payments** and 8 are setup and cleanup
+106 in total, and the split matters: **98 are x402 payments** and 8 are setup and cleanup
 (5 setup, 3 cleanup) — trustlines, the SAC deploy, minting the test asset, and returning a
 legacy balance. Only the payment rows are evidence that the payment path works.
 
-The 97 also split by what produced them, because a settlement count without that is not
+The 98 also split by what produced them, because a settlement count without that is not
 evidence of anything: 55 from `npm run evidence:batch` (a serial script paying our own
-seller, prefixed `load:`), 23 from the demo loop, 19 from stock-client conformance runs.
+seller, prefixed `load:`), 23 from the demo loop, 20 from stock-client conformance runs.
 <!-- /evidence:tally -->
 
 Those counts are rewritten from the table itself by `npm run evidence:build`, which the
