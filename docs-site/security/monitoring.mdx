@@ -31,10 +31,32 @@ concurrency. Post-pool numbers replace these.
 
 | Signal | Source | Threshold | Response | Today |
 |---|---|---|---|---|
-| `FEEPAYER` XLM balance | Horizon account | \< 7 days of burn at trailing rate | Top up; runbook documents the procedure | ⬜ |
-| Fee burn rate | balance delta per hour | > 3× the trailing 24h median | Possible drain attempt — inspect payer dispersion, consider rate limits | ⬜ |
-| Per-transaction fee | settlement result | > 250,000 stroops (half the 500k ceiling) | Network conditions moved; re-derive the ceiling with evidence, as it was derived originally | ⬜ |
+| `FEEPAYER` XLM balance | Horizon account | \< 7 days of burn at trailing rate | Top up; runbook below | ✅ measured nightly, alerted every 6h |
+| Fee burn rate | balance delta per hour | > 3× the trailing 24h median | Possible drain attempt — inspect payer dispersion, consider rate limits | ✅ measured nightly, alerted every 6h |
+| Per-transaction fee | settlement result | > 250,000 stroops (half the 500k ceiling) | Network conditions moved; re-derive the ceiling with evidence, as it was derived originally | ✅ measured nightly, alerted every 6h |
 | Rejections at the fee ceiling | `/verify` outcomes | any sustained run | The ceiling is now too tight and is silently refusing valid payments — the exact failure the 500k calibration fixed once already | ⬜ |
+
+`scripts/feepayer-runway.mjs` reads the fee-payer's balance and every transaction on its
+account over the trailing 7 days (successful or not — a fee is charged either way) off
+Horizon, computes the three rows above, and writes
+[`docs/status/feepayer.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/feepayer.json) via `npm run monitor:feepayer -- --emit`,
+run nightly by `.github/workflows/nightly-evidence.yml`. `.github/workflows/feepayer-alert.yml`
+runs the same script read-only every 6 hours — a tighter interval than the nightly job,
+since a runway signal classified **Page** (immediate, see below) sitting behind a once-a-day
+check is a contradiction — and on a breach opens or updates one pinned issue labeled
+`feepayer-alert` rather than a new one per run, closing it automatically on the next clean
+run.
+
+**Runbook: topping up.** On testnet, Friendbot funds an existing account, not only new
+ones — confirmed live: `curl "https://friendbot.stellar.org?addr=$FEEPAYER_PUBLIC"` added
+10,000 XLM to the deployed `FEEPAYER` in one call. `scripts/setup-testnet.mjs`'s `fund()`
+helper already does this idempotently for a fresh setup. On mainnet there is no faucet —
+topping up means a manual XLM transfer from an operator-controlled account, and hardware-
+backed key storage plus a documented rotation runbook are Tranche 3 work (§7.3 of
+`ARCHITECTURE.md`), not built yet. This paragraph covers today's testnet-only top-up
+procedure; the full runbook — fee-payer top-up, key rotation, channel-pool reconciliation,
+store failover, rollback — is still the Tranche 3 deliverable named under "Alert routing"
+below.
 
 ### Catalog integrity
 

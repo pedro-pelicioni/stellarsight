@@ -202,6 +202,7 @@ const footprint = readEvidence('soroban-footprint');
 const licenses = readEvidence('licenses');
 const interop = readEvidence('interop-discovery');
 const latency = readEvidence('discovery-latency');
+const feepayer = readEvidence('feepayer');
 
 const labelCounts = {};
 for (const meta of Object.values(provenance?.hashes ?? {})) {
@@ -505,6 +506,40 @@ if (footprint?.used && footprint?.limits) {
   );
   w();
   w(`Memory is the one row without a measurement: ${footprint.memoryNote}`);
+  w();
+}
+
+/* ── fee-payer runway ─────────────────────────────────────────────────────── */
+
+if (feepayer?.balanceXlm) {
+  w('## Fee-payer runway');
+  w();
+  w('THREAT-MODEL.md T6: this deployment sponsors every buyer\'s network fee from one');
+  w('account, so a drained fee-payer stops every settlement at once. Read straight off');
+  w('Horizon — balance, and burn from every transaction on the account over the trailing');
+  w('window, successful or not, since a fee is charged either way. Regenerate with');
+  w('`npm run monitor:feepayer -- --emit`; a scheduled workflow pages on a breach.');
+  w();
+  w('| Signal | Value | Threshold | Status |');
+  w('|---|---|---|---|');
+  const n = (v) => (typeof v === 'number' ? v.toLocaleString('en-US') : '—');
+  w(`| Balance | ${feepayer.balanceXlm} XLM | — | — |`);
+  w(
+    `| Runway | ${feepayer.runway?.days === null ? 'unbounded' : `${feepayer.runway?.days?.toFixed(2)} days`} | ` +
+      `< ${n(feepayer.runway?.thresholdDays)} days | ${feepayer.runway?.breach ? '🔴 breach' : '✅ ok'} |`,
+  );
+  w(
+    `| Last-hour burn vs 24h median | ${n(feepayer.burnRate?.lastHourBurnStroops)} vs ${n(feepayer.burnRate?.median24hStroops)} stroops | ` +
+      `> ${n(feepayer.burnRate?.multiplier)}× median | ${feepayer.burnRate?.breach ? '🔴 breach' : '✅ ok'} |`,
+  );
+  if (feepayer.perTxFee) {
+    w(
+      `| Last conformance fee | ${n(feepayer.perTxFee.stroops)} stroops | > ${n(feepayer.perTxFee.ceilingHalfStroops)} stroops | ` +
+        `${feepayer.perTxFee.breach ? '🔴 breach' : '✅ ok'} |`,
+    );
+  }
+  w();
+  w(`Artifact: [\`docs/status/feepayer.json\`](./status/feepayer.json)`);
   w();
 }
 

@@ -1,0 +1,34 @@
+{
+  "kind": "feepayer",
+  "generatedAt": "2026-09-02T20:38:01.309Z",
+  "commit": "3c91981",
+  "node": "v24.10.0",
+  "network": "stellar:testnet",
+  "feePayer": "GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT",
+  "horizon": "https://horizon-testnet.stellar.org",
+  "windowDays": 7,
+  "transactionsConsidered": 7,
+  "balanceXlm": "9999.4904797",
+  "balanceStroops": 99994904797,
+  "burnRate": {
+    "lastHourBurnStroops": 0,
+    "median24hStroops": 0,
+    "multiplier": 3,
+    "breach": false
+  },
+  "runway": {
+    "avgBurnPerHourStroops": 1339.7380952380952,
+    "totalBurnStroops": 225076,
+    "days": 3109902.1378512145,
+    "thresholdDays": 7,
+    "breach": false
+  },
+  "perTxFee": {
+    "stroops": 50374,
+    "ceilingHalfStroops": 250000,
+    "breach": false,
+    "source": "docs/status/soroban-footprint.json",
+    "txHash": "a5ddac7c88c7635ec0694b5cd077f9ca486d2010614f77d1f3986c4fbcd8847c"
+  },
+  "breach": false
+}

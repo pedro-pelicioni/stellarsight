@@ -36,6 +36,7 @@
     "eval:search:report": "node scripts/eval-search.mjs --report",
     "load:baseline": "node scripts/load-baseline.mjs",
   "latency:discovery": "node scripts/latency-baseline.mjs",
+    "monitor:feepayer": "node scripts/feepayer-runway.mjs",
     "test:agent": "node --test apps/agent/src/replay-guard.test.mjs",
     "demo:agent": "node apps/agent/src/cli.mjs",
     "mcp": "node apps/agent/src/mcp-server.mjs",

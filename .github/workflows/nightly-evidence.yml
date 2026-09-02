@@ -67,6 +67,18 @@ jobs:
       - name: Measure the settlement's Soroban footprint
         run: npm run evidence:footprint -- --emit
 
+      # THREAT-MODEL.md T6: balance and burn rate for the account sponsoring every buyer's
+      # fee, read straight off Horizon. FEEPAYER_PUBLIC is a public key, not a secret
+      # (docs/DEPLOY.md says so explicitly), and is already published in README.md and
+      # docs/TESTNET-TXS.md — this deployment's `feepayer-alert.yml` pages on a breach, so
+      # this step only records the numbers and never fails the nightly evidence run over
+      # them.
+      - name: Record the fee-payer's runway
+        run: |
+          npm run monitor:feepayer -- \
+            --feepayer GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT \
+            --emit || true
+
       # Same run, the negative paths: every documented rejection, expected vs observed.
       - name: Audit the rejection paths
         run: |
