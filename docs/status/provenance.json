@@ -7,7 +7,7 @@
     "scripted-load",
     "nightly-ci"
   ],
-  "updatedAt": "2026-09-02T11:39:52.783Z",
+  "updatedAt": "2026-09-02T13:10:27.165Z",
   "hashes": {
     "fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882": {
       "label": "conformance",
@@ -448,6 +448,16 @@
       "label": "conformance",
       "run": "33625707418",
       "recordedAt": "2026-09-02T11:39:47.773Z"
+    },
+    "f1d9c459aeac0e92330451e2a41115d6ddff0953136581418442241d0fef4520": {
+      "label": "setup",
+      "run": "contracts/upto/deploy-testnet.sh",
+      "recordedAt": "2026-09-02T13:08:53.150Z"
+    },
+    "62846cad7a356bf422d5ce1aa03dee92c9bf3e891dc02146b141808445af1029": {
+      "label": "setup",
+      "run": "contracts/upto/deploy-testnet.sh",
+      "recordedAt": "2026-09-02T13:10:27.165Z"
     }
   }
 }

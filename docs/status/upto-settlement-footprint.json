@@ -1,0 +1,55 @@
+{
+  "kind": "upto-settlement-footprint",
+  "generatedAt": "2026-09-02T13:10:32.862Z",
+  "commit": "3c91981",
+  "node": "v24.10.0",
+  "network": "stellar:testnet",
+  "txHash": "62846cad7a356bf422d5ce1aa03dee92c9bf3e891dc02146b141808445af1029",
+  "ledger": 4466208,
+  "shape": {
+    "feeBumped": false,
+    "operations": 1,
+    "operationTypes": [
+      "invokeHostFunction"
+    ],
+    "hostFunctionType": "hostFunctionTypeInvokeContract",
+    "authEntries": 1,
+    "authSubInvocations": 1
+  },
+  "used": {
+    "instructions": 829354,
+    "diskReadBytes": 232,
+    "writeBytes": 528,
+    "diskReadEntries": 3,
+    "writeLedgerEntries": 3,
+    "memoryBytes": null
+  },
+  "fees": {
+    "resourceFeeStroops": 34045,
+    "innerFeeStroops": 34145,
+    "feeBumpFeeStroops": null
+  },
+  "rpc": "https://soroban-testnet.stellar.org",
+  "limits": {
+    "txMaxInstructions": 400000000,
+    "txMemoryLimitBytes": 41943040,
+    "txMaxDiskReadBytes": 200000,
+    "txMaxWriteBytes": 132096,
+    "txMaxDiskReadEntries": 200,
+    "txMaxWriteLedgerEntries": 200
+  },
+  "utilizationPercent": {
+    "instructions": 0.2073,
+    "diskReadBytes": 0.116,
+    "writeBytes": 0.3997,
+    "diskReadEntries": 1.5,
+    "writeLedgerEntries": 1.5
+  },
+  "worstUtilizationPercent": 1.5,
+  "headroomFactor": 66.7,
+  "maxUtilizationPercentAllowed": 25,
+  "withinLimits": true,
+  "memoryNote": "Peak host memory is not recorded in the transaction envelope or result meta, so usage is unobserved. The per-transaction limit is reported for completeness.",
+  "registryNote": "There is no on-chain registry in this design — the catalog is facilitator-side — so the RFP clause about registry operations staying within limits has no on-chain operation to bound.",
+  "contractNote": "Measures a real contracts/upto settle_upto invocation (approve nested in the payer auth tree, then transfer_from), not the plain SAC transfer that scripts/soroban-footprint.mjs measures — expect one auth sub-invocation here."
+}

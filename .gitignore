@@ -8,6 +8,8 @@ dist/
 .vite/
 coverage/
 _probe_tmp.mjs
+target/
+test_snapshots/
 
 .claude/
 .vercel
