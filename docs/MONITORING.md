@@ -55,8 +55,8 @@ concurrency. Post-pool numbers replace these.
 
 | Signal | Source | Threshold | Response | Today |
 |---|---|---|---|---|
-| Stock-client conformance | `verify:conformance` against the live stack, settling a real payment per run | any failure | The spec moved or we drifted. This is the RFP's named failure mode | ✅ **running nightly**. `.github/workflows/nightly-evidence.yml` creates a throwaway buyer in-run (Friendbot → changeTrust → the public faucet, so no repository secret is involved), settles against `stellarsight.xyz` with an unmodified `@x402/fetch` client, and commits the hash. CI separately runs the 49 API-conformance checks, the suite and the search-quality gate on Node 22/24 |
-| `withBazaar()` API checks | `verify:api`, 49 checks | any failure | Wire-format regression | ✅ in CI |
+| Stock-client conformance | `verify:conformance` against the live stack, settling a real payment per run | any failure | The spec moved or we drifted. This is the RFP's named failure mode | ✅ **running nightly**. `.github/workflows/nightly-evidence.yml` creates a throwaway buyer in-run (Friendbot → changeTrust → the public faucet, so no repository secret is involved), settles against `stellarsight.xyz` with an unmodified `@x402/fetch` client, and commits the hash. CI separately runs the 54 API-conformance checks, the suite and the search-quality gate on Node 22/24 |
+| `withBazaar()` API checks | `verify:api`, 54 checks | any failure | Wire-format regression | ✅ in CI |
 | Upstream `@x402/*` version | dependency watch | new minor | Re-run conformance before bumping — 2.21 → 2.22 landed mid-development | ⬜ |
 
 ### RPC dependency

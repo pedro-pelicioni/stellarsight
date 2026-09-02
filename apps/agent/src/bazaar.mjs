@@ -14,6 +14,26 @@ import { ERROR_CODES, fail, loadConfig } from './pay.mjs';
 
 const errText = (e) => (e instanceof Error ? e.message : String(e ?? 'unknown error'));
 
+/**
+ * In-process mode has no HTTP status line, so nothing maps a handler failure onto an
+ * error the way `getJson` does for the network path. The discovery handlers signal one
+ * with `{ status: 500, body: { error, message } }`; without this check that body reaches
+ * `itemsOf` as 0 items and the caller reports NO_RESULTS / NOT_FOUND — a confident wrong
+ * reason ("the catalogue may still be empty") for what is actually an index failure.
+ */
+function inProcessFailure(res) {
+  const status = Number(res?.status);
+  if (!Number.isFinite(status) || status < 400) return null;
+  return fail(
+    'STELLARSIGHT_INDEX_ERROR',
+    `In-process discovery returned status ${status}: ${res?.body?.error || res?.body?.message || 'no detail'}` +
+      (res?.body?.error && res?.body?.message ? ` (${res.body.message})` : '')
+  );
+}
+
+/** In-process mode never talks to a host; do not report cfg.indexUrl's localhost default. */
+const INPROCESS_SOURCE = 'inprocess';
+
 async function getJson(url, timeoutMs = 8000) {
   let res;
   try {
@@ -107,6 +127,56 @@ export function summarise(rec, extra = {}) {
   };
 }
 
+async function searchInProcess(params) {
+  try {
+    const { getState } = await import('../../../packages/index/src/serverless.mjs');
+    const { searchResources } = await import('../../../packages/index/src/discovery.mjs');
+    const state = await getState();
+    const res = searchResources(state.catalog, params);
+    return inProcessFailure(res) ?? { ok: true, json: res.body };
+  } catch (err) {
+    return fail('STELLARSIGHT_INDEX_ERROR', `In-process discovery failed: ${errText(err)}`);
+  }
+}
+
+async function browseInProcess(params) {
+  try {
+    const { getState } = await import('../../../packages/index/src/serverless.mjs');
+    const { listResources } = await import('../../../packages/index/src/discovery.mjs');
+    const state = await getState();
+    const res = listResources(state.catalog, params);
+    return inProcessFailure(res) ?? { ok: true, json: res.body };
+  } catch (err) {
+    return fail('STELLARSIGHT_INDEX_ERROR', `In-process discovery failed: ${errText(err)}`);
+  }
+}
+
+async function describeInProcess(wanted) {
+  try {
+    const { getState } = await import('../../../packages/index/src/serverless.mjs');
+    const { listResources, searchResources } = await import('../../../packages/index/src/discovery.mjs');
+    const state = await getState();
+    const matches = (r) =>
+      r?.id === wanted ||
+      (typeof r?.resource === 'string' ? r.resource === wanted : r?.resource?.url === wanted);
+    // Both calls are checked: an index failure on either leg must not degrade into
+    // NOT_FOUND, which would tell the agent its id is wrong when the index is broken.
+    const listed = listResources(state.catalog, { limit: 100 });
+    const listedFailed = inProcessFailure(listed);
+    if (listedFailed) return listedFailed;
+    let rec = itemsOf(listed.body).find(matches);
+    if (!rec) {
+      const searched = searchResources(state.catalog, { query: wanted, limit: 25 });
+      const searchedFailed = inProcessFailure(searched);
+      if (searchedFailed) return searchedFailed;
+      rec = itemsOf(searched.body).find(matches);
+    }
+    return { ok: true, rec };
+  } catch (err) {
+    return fail('STELLARSIGHT_INDEX_ERROR', `In-process discovery failed: ${errText(err)}`);
+  }
+}
+
 /**
  * Ranked natural-language search.
  * @returns {Promise<{ok:true,items:Array,partialResults:boolean,pagination:object,source:string}|{ok:false,code,reason}>}
@@ -116,14 +186,22 @@ export async function search({ query, limit = 5, network, maxPrice, type, payTo,
     return fail('STELLARSIGHT_BAD_REQUEST', 'A non-empty `query` string is required for stellarsight_search.');
   }
   const cfg = loadConfig(config || {});
-  const u = new URL(`${cfg.indexUrl}/discovery/search`);
-  u.searchParams.set('query', query.trim());
-  u.searchParams.set('limit', String(clampLimit(limit)));
-  if (network) u.searchParams.set('network', network);
-  if (type) u.searchParams.set('type', type);
-  if (payTo) u.searchParams.set('payTo', payTo);
+  let res;
+  let inProcess = false;
 
-  const res = await getJson(u.toString());
+  if (cfg.indexUrl === 'inprocess' || config?.inProcess) {
+    inProcess = true;
+    res = await searchInProcess({ query: query.trim(), limit: clampLimit(limit), network, type, payTo });
+  } else {
+    const u = new URL(`${cfg.indexUrl}/discovery/search`);
+    u.searchParams.set('query', query.trim());
+    u.searchParams.set('limit', String(clampLimit(limit)));
+    if (network) u.searchParams.set('network', network);
+    if (type) u.searchParams.set('type', type);
+    if (payTo) u.searchParams.set('payTo', payTo);
+    res = await getJson(u.toString());
+  }
+
   if (!res.ok) return res;
 
   let items = itemsOf(res.json).map((r) =>
@@ -170,23 +248,39 @@ export async function search({ query, limit = 5, network, maxPrice, type, payTo,
     items,
     partialResults: Boolean(res.json?.partialResults),
     pagination: res.json?.pagination ?? { limit: clampLimit(limit), cursor: null },
-    source: cfg.indexUrl
+    source: inProcess ? INPROCESS_SOURCE : cfg.indexUrl
   };
 }
 
 /** Unranked catalogue listing with filters. */
 export async function browse({ type, payTo, network, scheme, extensions, limit = 20, offset = 0, config } = {}) {
   const cfg = loadConfig(config || {});
-  const u = new URL(`${cfg.indexUrl}/discovery/resources`);
-  if (type) u.searchParams.set('type', type);
-  if (payTo) u.searchParams.set('payTo', payTo);
-  if (network) u.searchParams.set('network', network);
-  if (scheme) u.searchParams.set('scheme', scheme);
-  if (extensions) u.searchParams.set('extensions', Array.isArray(extensions) ? extensions.join(',') : String(extensions));
-  u.searchParams.set('limit', String(clampLimit(limit, 100)));
-  u.searchParams.set('offset', String(Math.max(0, Number(offset) || 0)));
+  let res;
+  let inProcess = false;
 
-  const res = await getJson(u.toString());
+  if (cfg.indexUrl === 'inprocess' || config?.inProcess) {
+    inProcess = true;
+    res = await browseInProcess({
+      type,
+      payTo,
+      network,
+      scheme,
+      extensions,
+      limit: clampLimit(limit, 100),
+      offset: Math.max(0, Number(offset) || 0)
+    });
+  } else {
+    const u = new URL(`${cfg.indexUrl}/discovery/resources`);
+    if (type) u.searchParams.set('type', type);
+    if (payTo) u.searchParams.set('payTo', payTo);
+    if (network) u.searchParams.set('network', network);
+    if (scheme) u.searchParams.set('scheme', scheme);
+    if (extensions) u.searchParams.set('extensions', Array.isArray(extensions) ? extensions.join(',') : String(extensions));
+    u.searchParams.set('limit', String(clampLimit(limit, 100)));
+    u.searchParams.set('offset', String(Math.max(0, Number(offset) || 0)));
+    res = await getJson(u.toString());
+  }
+
   if (!res.ok) return res;
 
   const items = itemsOf(res.json).map((r) => summarise(r));
@@ -203,7 +297,7 @@ export async function browse({ type, payTo, network, scheme, extensions, limit =
     total: res.json?.total ?? items.length,
     limit: res.json?.limit ?? clampLimit(limit, 100),
     offset: res.json?.offset ?? (Number(offset) || 0),
-    source: cfg.indexUrl
+    source: inProcess ? INPROCESS_SOURCE : cfg.indexUrl
   };
 }
 
@@ -217,6 +311,20 @@ export async function describe({ id, config } = {}) {
   }
   const cfg = loadConfig(config || {});
   const wanted = id.trim();
+
+  if (cfg.indexUrl === 'inprocess' || config?.inProcess) {
+    const inProc = await describeInProcess(wanted);
+    if (!inProc.ok) return inProc;
+    if (!inProc.rec) {
+      // No host to name here — the index is this process, not cfg.indexUrl's default.
+      return fail(
+        'STELLARSIGHT_NOT_FOUND',
+        `No resource with id "${wanted}" is registered in the bazaar index. ` +
+          `Use stellarsight_search or stellarsight_browse to obtain a valid id.`
+      );
+    }
+    return { ok: true, ...describeRecord(inProc.rec), source: INPROCESS_SOURCE };
+  }
 
   // The index has no by-id route in the contract, so resolve through the two
   // documented endpoints: exact-id scan over the catalogue, then search fallback.

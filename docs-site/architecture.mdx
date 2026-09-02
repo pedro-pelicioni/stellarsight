@@ -774,8 +774,7 @@ documentation.
 
 The server holds no buyer keys on the discovery path. Signing stays client-side.
 
-Today MCP is stdio-only. Tranche 2 adds a hosted HTTP endpoint and CI adapter tests proving
-stock TypeScript, Go and Python discovery clients parse the responses.
+MCP is served over stdio (`apps/agent/src/mcp-server.mjs`) and over Streamable HTTP on the hosted endpoint (`https://stellarsight.xyz/mcp`, `api/mcp.mjs`). The hosted endpoint operates in stateless mode, enforces per-IP rate limiting, and marks seller-supplied text with untrusted markers (`[UNTRUSTED_SELLER_CONTENT: ...]`) to close T5. `stellarsight_pay` is refused server-side on the hosted endpoint so buyer signing keys remain client-side.
 
 ### 5.2 Seller integration
 
@@ -802,7 +801,7 @@ Two harnesses, both driving **unmodified** upstream clients:
 - `npm run verify:conformance` — a stock `@x402/fetch` client (`wrapFetchWithPayment`, no
   STELLARSIGHT code on the path) completes 402 → sign → settle → 200 and prints the settled
   hash.
-- `npm run verify:api` — 49 checks driving the real `withBazaar()` client from
+- `npm run verify:api` — 54 checks driving the real `withBazaar()` client from
   `@x402/extensions` against the handlers, re-validating every `accepts` entry with
   `@x402/core`'s own `PaymentRequirementsSchema`.
 
@@ -1050,7 +1049,7 @@ control that answers it and the test that proves it. Summary:
 | Ranking manipulation | prior capped at 0.25; seeds pinned to 0 settlements | Gameable by real cheap settlements; stated |
 | Store used to bypass validation | only post-validation records persisted | By construction |
 | Store outage | read-only degradation + health reporting | Tested |
-| Silent spec drift | stock-client conformance vs the live stack; 49 API checks + suite nightly in CI | Caught a real bug already |
+| Silent spec drift | stock-client conformance vs the live stack; 54 API checks + suite nightly in CI | Caught a real bug already |
 
 ### 7.3 Key management
 
@@ -1200,7 +1199,7 @@ run, on both Node versions the project claims to support. Tranche 3 funds four m
 post-launch operations and a handoff document naming the maintainer, the escalation path and
 the responsibility boundary — because a service that dies when the grant ends is what the
 RFP is trying to avoid. The failure mode the RFP screens for is drift as the spec moves, so
-the conformance cadence is scheduled to continue past the grant window: CI runs the 49
+the conformance cadence is scheduled to continue past the grant window: CI runs the 54
 API-conformance checks, the full test suite and the search-quality regression gate nightly
 on Node 22/24, and the end-to-end settled-payment conformance (`npm run verify:conformance`)
 runs against the live stack.
@@ -1216,7 +1215,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate |
-| Integrity is real | `npm test` → 241 tests, 70 adversarial |
+| Integrity is real | `npm test` → 248 tests, 70 adversarial |
 | A stock client can pay us | `npm run verify:conformance` |
 | The concurrency limit is real | `npm run load:baseline` |
 

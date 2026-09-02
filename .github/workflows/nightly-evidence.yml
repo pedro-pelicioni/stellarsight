@@ -1,6 +1,6 @@
 # One real settled payment a night, against the deployed stack, published as evidence.
 #
-# CI already runs the tests, the 49 API-conformance checks and the search-quality gate
+# CI already runs the tests, the 54 API-conformance checks and the search-quality gate
 # nightly — but none of those move money, and the claim this project is judged on is that
 # an unmodified x402 client can pay a real resource. So this job does exactly that, once a
 # night, against https://stellarsight.xyz rather than a stack booted inside the runner:
