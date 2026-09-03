@@ -116,7 +116,47 @@ On boot it announces every route in `ROUTES` to the index.
 
 ---
 
-## Step 3 — you are already in the Bazaar · one curl
+## Step 3 — check it locally before it is announced · 0.4 s
+
+A rejected listing has historically been silent: a `could not announce` warning in the
+seller's own log at boot, or nothing at all when the index soft-drops a field, which is
+exactly the signal [`docs/MONITORING.md`](/security/monitoring) reads as "probing or a broken
+seller" — not something a seller watches for themselves. `stellarsight-seller check` runs
+the index's own integrity validator against your routes **without a facilitator or index
+running**, so a bad host, a malformed `routeTemplate` or an over-length tag shows up before
+the first announce, not after.
+
+```bash
+STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check
+```
+
+**Check:**
+
+```
+ok    GET    /v1/fx/usd-brl
+ok    GET    /v1/cep/:cep
+ok    POST   /v1/ocr/nota-fiscal
+
+3/3 route(s) ok
+```
+
+`STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1` is the same escape hatch `dev:seller` and
+`dev:facilitator` already set — without it, `localhost` is correctly refused as
+unreachable by anyone outside your machine, the same way the live catalog would refuse it.
+Exit code is `1` on any rejection and `--json` prints a machine-readable report, so this is
+also the one-line CI gate: `npx stellarsight-seller check || exit 1`.
+
+The command reads `apps/seller/stellarsight.config.mjs` — a companion declaration of the
+same three routes through the real `@stellarsight/express` API, kept next to `server.mjs`
+purely so this step has something to check (`server.mjs` implements the x402 challenge
+inline; see its header for why). If you *are* using `@stellarsight/express`'s `pay(...)`
+directly, there is no separate file to keep in sync: export the same `pay` your server
+attaches to routes, and the CLI checks exactly what you serve — see the
+[`packages/express` README](https://github.com/pedro-pelicioni/stellarsight/blob/main/packages/express#readme) for the config-file contract.
+
+---
+
+## Step 4 — you are already in the Bazaar · one curl
 
 Two independent paths put you in the catalog, and you get both:
 
@@ -157,7 +197,7 @@ curl -s 'localhost:4022/discovery/resources?limit=50' | jq '.total, .items[].id'
 
 ---
 
-## Step 4 — get paid, with a client you did not write · 10 s
+## Step 5 — get paid, with a client you did not write · 10 s
 
 ```bash
 npm run verify:conformance
@@ -193,17 +233,20 @@ curl -s 'localhost:4022/discovery/search?query=weather&limit=1' | jq '(.resource
 
 ---
 
-## Total: 59 seconds of machine time
+## Total: 60 seconds of machine time
 
-Measured on a clean clone with `/usr/bin/time -p`, macOS, against live Stellar testnet:
+Measured on a clean clone with `/usr/bin/time -p`, macOS, against live Stellar testnet —
+except `stellarsight-seller check`, which never touches the network and was timed
+separately, on Linux, for exactly that reason:
 
 | Command | Wall clock | What it is waiting on |
 |---|---|---|
 | `git clone` | **0.1 s** | local; from GitHub, your connection |
 | `npm install` | **3.2 s** | 196 packages, 255 MB. npm hardlinks from its store, so a machine that has never run npm will be slower — that is a download, not our code |
 | `npm run setup` | **45.9 s** | the real work: Friendbot funding, issuing `SXT`, deploying its SAC, trustlines — **5 testnet transactions**, each waiting on ledger close |
+| `stellarsight-seller check` | **0.4 s** | nothing — it is offline by construction, see Step 3 |
 | `npm run verify:conformance` | **10.0 s** | one full `402 → sign → settle → 200`, including a real settlement |
-| | **59.2 s** | |
+| | **59.6 s** | |
 
 An earlier version of this document said 13 minutes. That was an estimate and it was wrong —
 it was dominated by a made-up five minutes for "declare your endpoint", which is not machine
@@ -278,7 +321,7 @@ instant and unrestricted; hosted listing needs a token from the operator.
 |---|---|---|
 | `ASSET_SAC / SELLER_PUBLIC missing` | `npm run setup` has not run, or `.env` was deleted | `npm run setup` |
 | Search returns nothing | Index restarted and lost its in-memory catalog | Wait 30 s for the seller's next re-announce, or restart the seller |
-| `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 3](#step-3--you-are-already-in-the-bazaar--one-curl) |
+| `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 4](#step-4--you-are-already-in-the-bazaar--one-curl) |
 | `Failed to parse payment requirements` | Your 402 has no `PAYMENT-REQUIRED` header | See [Bringing your own server](#bringing-your-own-server), item 1 |
 | Settle returns `insufficient balance` | The buyer holds no `SXT` | `npm run setup` mints and distributes it |
 | `503` from the hosted API | No durable store attached | Read-only mode. `curl stellarsight.xyz/discovery/health` reports which mode is active |

@@ -9,6 +9,9 @@
     ".": "./src/index.mjs",
     "./package.json": "./package.json"
   },
+  "bin": {
+    "stellarsight-seller": "./src/cli.mjs"
+  },
   "files": [
     "src",
     "README.md",
@@ -47,6 +50,9 @@
     "@x402/core": ">=2.21.0 <3",
     "@x402/extensions": ">=2.21.0 <3",
     "express": ">=4.18.0 <6"
+  },
+  "dependencies": {
+    "@stellarsight/index": "^1.0.0"
   },
   "scripts": {
     "test": "node --test ../../test/express-middleware.test.mjs"

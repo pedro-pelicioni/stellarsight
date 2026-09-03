@@ -35,10 +35,12 @@ import {
 
 import { parseAtomicUnits } from "./amount.mjs";
 import { createAnnouncer } from "./announce.mjs";
+import { checkListings } from "./check.mjs";
 import { normalizeConfig } from "./config.mjs";
 import { postJson } from "./http.mjs";
 import { NO_REASON_GIVEN, reasonOf, snippet } from "./reason.mjs";
 import {
+  announceRecordFor,
   compileRoute,
   discoveryFor,
   learnPath,
@@ -75,6 +77,19 @@ export function stellarsightPaywall(options) {
 
   pay.routes = () => routes.map((r) => publicViewOf(r, config));
 
+  /**
+   * The exact records `pay.announce()` would POST to the bazaar index, one per declared
+   * route, without sending any of them. A route with no known path yet (see `learnPath`)
+   * has nothing announceable, so its `record` is `null` — the same case `announce()`
+   * itself skips.
+   */
+  pay.announceRecords = () =>
+    routes.map((r) => ({
+      method: r.method,
+      path: r.path,
+      record: r.path ? announceRecordFor(r, config, config.baseUrl) : null,
+    }));
+
   pay.wellKnown = (origin) => {
     const base = origin ?? config.baseUrl ?? "";
     return {
@@ -93,6 +108,13 @@ export function stellarsightPaywall(options) {
   pay.wellKnownHandler = () => (req, res) => res.json(pay.wellKnown(originFor(req, config)));
 
   pay.announce = (opts) => announcer.run({ quiet: false, ...opts });
+
+  /**
+   * Locally replay every announce record through the bazaar index's OWN integrity
+   * validator (`@stellarsight/index`) — no facilitator or index needs to be running.
+   * This is what the `stellarsight-seller check` CLI calls; see check.mjs.
+   */
+  pay.check = () => checkListings(pay);
 
   pay.stop = () => announcer.stop();
 
