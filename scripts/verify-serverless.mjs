@@ -46,6 +46,7 @@ import resourcesFn from '../api/discovery/resources.mjs';
 import searchFn from '../api/discovery/search.mjs';
 import healthFn from '../api/discovery/health.mjs';
 import integrityFn from '../api/discovery/integrity.mjs';
+import mcpFn from '../api/mcp.mjs';
 import {
   resourcesHandler,
   searchHandler,
@@ -576,7 +577,7 @@ async function main() {
     const catchAllIndex = rewrites.findIndex((r) => r.source === '/(.*)');
     assert(catchAllIndex !== -1, 'the SPA catch-all rewrite is missing');
     eq(catchAllIndex, rewrites.length - 1, 'the SPA catch-all must be the LAST rewrite');
-    for (const path of ['/discovery/resources', '/discovery/search', '/discovery/health']) {
+    for (const path of ['/discovery/resources', '/discovery/search', '/discovery/health', '/mcp']) {
       const i = rewrites.findIndex((r) => r.source === path);
       assert(i !== -1, `no rewrite for ${path}`);
       assert(i < catchAllIndex, `${path} is shadowed by the catch-all`);
@@ -597,6 +598,7 @@ async function main() {
     eq(resolve('/discovery/search'), '/api/discovery/search', '/discovery/search');
     eq(resolve('/discovery/resources'), '/api/discovery/resources', '/discovery/resources');
     eq(resolve('/discovery/health'), '/api/discovery/health', '/discovery/health');
+    eq(resolve('/mcp'), '/api/mcp', '/mcp reaches the mcp function, not index.html');
     // The whole namespace belongs to the API: an unknown /discovery/* path must 404 as
     // JSON, not silently render the single-page app.
     //
@@ -628,10 +630,10 @@ async function main() {
       readFileSync(fileURLToPath(new URL(`.${rule.destination}.mjs`, ROOT)), 'utf8');
       checked++;
     }
-    // 14 = four discovery endpoints (resources, search, health, integrity) + the
+    // 16 = four discovery endpoints (resources, search, health, integrity) + the
     // /discovery/:path* guard + five facilitator routes + the playground faucet + the
-    // explorer feed + the seller's two (/v1/:path* and /.well-known/x402).
-    eq(checked, 14, 'expected fourteen concrete function routes (discovery x5 + facilitator x5 + playground x1 + explorer x1 + seller x2)');
+    // explorer feed + the hosted mcp routes (/mcp, /mcp/:path*) + the seller's two (/v1/:path* and /.well-known/x402).
+    eq(checked, 16, 'expected sixteen concrete function routes (discovery x5 + facilitator x5 + playground x1 + explorer x1 + mcp x2 + seller x2)');
   });
 
   await check('the functions glob in vercel.json matches the files that exist', () => {
@@ -644,11 +646,14 @@ async function main() {
     const inc = String(vercelJson.functions['api/**/*.mjs'].includeFiles ?? '');
     assert(inc.includes('packages/index/src'), `includeFiles must cover packages/index/src, got "${inc}"`);
     assert(inc.includes('docs/status'), `includeFiles must cover docs/status for the explorer feed, got "${inc}"`);
+    assert(inc.includes('apps/agent/src'), `includeFiles must cover apps/agent/src for hosted mcp, got "${inc}"`);
+    assert(inc.includes('apps/facilitator/src'), `includeFiles must cover apps/facilitator/src for rate limiting, got "${inc}"`);
     // api/**/*.+(js|mjs|ts|tsx) is the zero-config glob Vercel uses to find functions,
     // so .mjs under api/ is picked up without further configuration.
     for (const name of ['resources', 'search', 'health', 'integrity', 'unknown']) {
       readFileSync(fileURLToPath(new URL(`api/discovery/${name}.mjs`, ROOT)), 'utf8');
     }
+    readFileSync(fileURLToPath(new URL('api/mcp.mjs', ROOT)), 'utf8');
     // Function filenames must be literal. A bracketed dynamic-route name such as
     // `[...path].mjs` is read as a character class by the glob above, so includeFiles
     // never matches it, the packages/index import is never traced, and the function
@@ -665,7 +670,12 @@ async function main() {
   const server = createServer((req, res) => {
     // Exactly what vercel.json's rewrites do: /discovery/* -> the function file.
     const path = new URL(req.url, 'http://localhost').pathname;
-    const fn = { '/discovery/resources': resourcesFn, '/discovery/search': searchFn, '/discovery/health': healthFn }[path];
+    const fn = {
+      '/discovery/resources': resourcesFn,
+      '/discovery/search': searchFn,
+      '/discovery/health': healthFn,
+      '/mcp': mcpFn,
+    }[path];
     if (!fn) {
       res.statusCode = 404;
       res.end('not found');
@@ -865,6 +875,117 @@ async function main() {
       const byExt = await bazaar.listResources({ extensions: 'bazaar', limit: 100 });
       assert(byExt.items.length > 0 && byExt.items.every((r) => 'bazaar' in r.extensions),
         'extensions filter through the client');
+    });
+
+    /* ---------- 8. hosted Streamable HTTP MCP server (api/mcp.mjs) ---------- */
+    console.log('\nhosted Streamable HTTP MCP server (api/mcp.mjs)');
+
+    await check('OPTIONS /mcp returns 204 with CORS headers', async () => {
+      const res = await fetch(`${origin}/mcp`, { method: 'OPTIONS' });
+      eq(res.status, 204, 'status');
+      eq(res.headers.get('access-control-allow-origin'), '*', 'CORS origin');
+      const methods = res.headers.get('access-control-allow-methods') ?? '';
+      assert(/POST/i.test(methods), 'allowed methods name POST');
+      // Stateless transport has no SSE stream, so GET must not be advertised.
+      assert(!/GET/i.test(methods), 'allowed methods must not name GET');
+    });
+
+    await check('POST /mcp with JSON-RPC initialize performs protocol handshake', async () => {
+      const res = await fetch(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream'
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: {
+            protocolVersion: '2024-11-05',
+            capabilities: {},
+            clientInfo: { name: 'verify-serverless', version: '1.0.0' }
+          }
+        })
+      });
+      eq(res.status, 200, 'status');
+      const text = await res.text();
+      assert(text.includes('"serverInfo"'), 'initialize payload must include serverInfo');
+      assert(text.includes('"stellarsight"'), 'serverInfo name must be stellarsight');
+    });
+
+    await check('POST /mcp tools/list exposes discovery plus a pay stub, never the live payer', async () => {
+      const res = await fetch(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          'mcp-protocol-version': '2024-11-05'
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 2,
+          method: 'tools/list',
+          params: {}
+        })
+      });
+      eq(res.status, 200, 'status');
+      const text = await res.text();
+      assert(text.includes('stellarsight_search'), 'must include stellarsight_search');
+      assert(text.includes('stellarsight_browse'), 'must include stellarsight_browse');
+      assert(text.includes('stellarsight_describe'), 'must include stellarsight_describe');
+      // The name alone would pass whether the endpoint exposed the refusal stub or a live
+      // payer holding buyer keys — the regression that matters. Assert the stub's text.
+      assert(text.includes('stellarsight_pay'), 'must include stellarsight_pay');
+      assert(text.includes('Disabled on the hosted MCP endpoint'), 'stellarsight_pay must be the refusal stub');
+    });
+
+    await check('POST /mcp tools/call stellarsight_search returns results with T5 untrusted markers', async () => {
+      const res = await fetch(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          'mcp-protocol-version': '2024-11-05'
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 3,
+          method: 'tools/call',
+          params: {
+            name: 'stellarsight_search',
+            arguments: { query: 'weather' }
+          }
+        })
+      });
+      eq(res.status, 200, 'status');
+      const text = await res.text();
+      assert(text.includes('[UNTRUSTED_SELLER_CONTENT:'), 'seller metadata must carry untrusted marker (T5)');
+      assert(text.includes('"ok":true'), 'tool call succeeds');
+    });
+
+    await check('POST /mcp tools/call stellarsight_pay is refused server-side (§5.1)', async () => {
+      const res = await fetch(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          'mcp-protocol-version': '2024-11-05'
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 4,
+          method: 'tools/call',
+          params: {
+            name: 'stellarsight_pay',
+            arguments: { url: 'https://api.weather.example/v1/forecast' }
+          }
+        })
+      });
+      eq(res.status, 200, 'status');
+      const text = await res.text();
+      assert(text.includes('STELLARSIGHT_CONFIG_MISSING'), 'must return STELLARSIGHT_CONFIG_MISSING');
+      assert(text.includes('hosted MCP endpoint'), 'must explain buyer signing keys remain client-side');
     });
   } finally {
     await new Promise((resolve) => server.close(resolve));

@@ -86,16 +86,20 @@ function durableCounter(kv) {
 }
 
 /**
- * createRateLimit({ env, deps }) -> express middleware
+ * createRateLimit({ env, deps, scope }) -> express middleware
  *
  * `deps` exists for tests: `{ kv, now }` replace the store and the clock so the whole
  * matrix runs without a network.
+ *
+ * `scope` namespaces the counter keys so surfaces sharing this module do not spend each
+ * other's budget — the hosted /mcp endpoint and the facilitator's settlement routes are
+ * separately funded and must be separately limited. Defaults to 'facilitator'.
  *
  *   FACILITATOR_RATE_LIMIT          requests per window, per caller. 0 disables. Default 120.
  *   FACILITATOR_RATE_WINDOW_S       window length in seconds. Default 60.
  *   FACILITATOR_RATE_GLOBAL_LIMIT   requests per window across all callers. 0 disables (default).
  */
-export function createRateLimit({ env = process.env, deps = {} } = {}) {
+export function createRateLimit({ env = process.env, deps = {}, scope: surface = 'facilitator' } = {}) {
   const perCaller = intFromEnv(env.FACILITATOR_RATE_LIMIT, 120);
   const windowSeconds = intFromEnv(env.FACILITATOR_RATE_WINDOW_S, 60) || 60;
   const globalCap = intFromEnv(env.FACILITATOR_RATE_GLOBAL_LIMIT, 0);
@@ -111,14 +115,24 @@ export function createRateLimit({ env = process.env, deps = {} } = {}) {
     return counter;
   };
 
+  const setHeader = (res, k, v) => {
+    if (typeof res.set === 'function') res.set(k, v);
+    else if (typeof res.setHeader === 'function') res.setHeader(k, v);
+  };
+
+  // Only the facilitator can honestly tell a caller to run their own; other surfaces name
+  // themselves instead of claiming an identity they do not have.
+  const isFacilitator = surface === 'facilitator';
+  const subject = isFacilitator ? 'this facilitator' : `the ${surface} endpoint`;
+
   const refuse = (res, { scope, limit, retryAfterSeconds }) => {
     const reason =
       scope === 'global'
-        ? `this facilitator is handling its configured maximum of ${limit} requests per ${windowSeconds}s; retry in ${retryAfterSeconds}s or run your own (docs/DEPLOY.md)`
+        ? `${subject} is handling its configured maximum of ${limit} requests per ${windowSeconds}s; retry in ${retryAfterSeconds}s${isFacilitator ? ' or run your own (docs/DEPLOY.md)' : ''}`
         : `this caller has made ${limit} requests in the last ${windowSeconds}s, which is the configured per-caller limit; retry in ${retryAfterSeconds}s`;
-    res.set('Retry-After', String(retryAfterSeconds));
-    res.set('Cache-Control', 'no-store');
-    return res.status(429).json({
+    setHeader(res, 'Retry-After', String(retryAfterSeconds));
+    setHeader(res, 'Cache-Control', 'no-store');
+    const body = {
       ok: false,
       code: 'STELLARSIGHT_RATE_LIMITED',
       reason,
@@ -126,7 +140,14 @@ export function createRateLimit({ env = process.env, deps = {} } = {}) {
       limit,
       windowSeconds,
       retryAfterSeconds,
-    });
+    };
+    if (typeof res.status === 'function' && typeof res.json === 'function') {
+      return res.status(429).json(body);
+    }
+    setHeader(res, 'Content-Type', 'application/json; charset=utf-8');
+    res.statusCode = 429;
+    res.end(`${JSON.stringify(body, null, 2)}\n`);
+    return res;
   };
 
   return async function rateLimit(req, res, next) {
@@ -150,17 +171,17 @@ export function createRateLimit({ env = process.env, deps = {} } = {}) {
 
     try {
       if (globalCap > 0) {
-        const g = await count(`stellarsight:rl:all:${bucket}`);
+        const g = await count(`stellarsight:rl:${surface}:all:${bucket}`);
         if (g.count > globalCap) {
           return refuse(res, { scope: 'global', limit: globalCap, retryAfterSeconds: g.retryAfterSeconds });
         }
       }
 
       if (perCaller > 0) {
-        const c = await count(`stellarsight:rl:ip:${clientIpHash(req)}:${bucket}`);
-        res.set('X-RateLimit-Limit', String(perCaller));
-        res.set('X-RateLimit-Remaining', String(Math.max(0, perCaller - c.count)));
-        if (degraded) res.set('X-RateLimit-Degraded', 'per-instance');
+        const c = await count(`stellarsight:rl:${surface}:ip:${clientIpHash(req)}:${bucket}`);
+        setHeader(res, 'X-RateLimit-Limit', String(perCaller));
+        setHeader(res, 'X-RateLimit-Remaining', String(Math.max(0, perCaller - c.count)));
+        if (degraded) setHeader(res, 'X-RateLimit-Degraded', 'per-instance');
         if (c.count > perCaller) {
           return refuse(res, { scope: 'ip', limit: perCaller, retryAfterSeconds: c.retryAfterSeconds });
         }

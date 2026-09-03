@@ -34,10 +34,10 @@ You do not have to take any claim in this README on trust. Every one of them is 
 |---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer. Concretely: on stellar.expert the transaction's source / fee account equals [`GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT`](https://stellar.expert/explorer/testnet/account/GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT), while the payer appears only inside the Soroban authorization entry / `transfer` event. All four account keys: [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md) |
-| Catalog integrity is real, not decorative | `npm test` → 248 tests, 0 failing (70 of them adversarial) |
+| Catalog integrity is real, not decorative | `npm test` → 256 tests, 0 failing (70 of them adversarial) |
 | Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI |
 | We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys |
-| It stays that way | [CI](../../actions) runs the suite, the 49 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one |
+| It stays that way | [CI](../../actions) runs the suite, the 54 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one |
 | Attacks are refused **and named** | Open [the playground](https://stellarsight.xyz/playground) and press *Try to break it*: a replayed authorization, a corrupted signature and an inflated echoed price, each run against a freshly signed entry so the outcome is attributable. Two are refused; the third settles **at the original price**, because the echoed price is decoration |
 | We caught the drift **in ourselves** | Our own seller advertised `x402Version: 2` and answered 402 in the v1 wire format — a stock client broke against it while ours, which had a lenient fallback, did not. Found by pointing an unmodified `@x402/fetch` client at it, fixed, and now asserted every night. [The whole story](#where-we-had-drifted) |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key |
@@ -265,7 +265,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
-| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. Ships a `stellarsight-seller check` CLI that validates a listing locally before it is announced. 45 of the 248 tests are its. On npm: `npm i @stellarsight/express` |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 256 tests are its. On npm: `npm i @stellarsight/express` |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |
@@ -303,8 +303,8 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 248 tests
-npm run verify:api # 49 checks, incl. the stock withBazaar() client against the handlers
+npm test           # 256 tests
+npm run verify:api # 54 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
 npm run load:baseline        # serial vs concurrent settlement, the single-fee-payer "before"

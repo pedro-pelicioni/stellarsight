@@ -6,7 +6,7 @@
   "framework": null,
   "functions": {
     "api/**/*.mjs": {
-      "includeFiles": "{packages/index/src/**,docs/status/**}",
+      "includeFiles": "{packages/index/src/**,docs/status/**,apps/agent/src/**,apps/facilitator/src/**}",
       "maxDuration": 60
     }
   },
@@ -58,6 +58,14 @@
     {
       "source": "/explorer/feed",
       "destination": "/api/explorer/feed"
+    },
+    {
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/mcp/:path*",
+      "destination": "/api/mcp"
     },
     {
       "source": "/v1/:path*",

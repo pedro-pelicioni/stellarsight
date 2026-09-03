@@ -71,7 +71,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 | Requirement | Status | Evidence |
 |---|---|---|
 | MCP interface an agent can discover and pay through | **Delivered** | `apps/agent` — four MCP tools with input **and** output schemas, 17-code error enum |
-| Hosted HTTP MCP endpoint | **T2** | ARCHITECTURE §10 |
+| Hosted HTTP MCP endpoint | **Delivered** | `api/mcp.mjs` — Streamable HTTP endpoint at `https://stellarsight.xyz/mcp` with stateless transport, per-IP rate limiting, and T5 prompt injection markers |
 
 ---
 
