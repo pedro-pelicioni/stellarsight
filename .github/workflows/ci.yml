@@ -100,3 +100,40 @@ jobs:
         run: |
           npm run docs:sync
           git diff --exit-code -- docs-site/
+
+  contracts:
+    name: cargo test (contracts/)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The Soroban crate under contracts/ is untouched by most PRs, and spinning up a
+      # Rust toolchain isn't free — so this job skips its own steps unless contracts/**
+      # changed. The nightly cron always runs it regardless of what changed, so a
+      # soroban-sdk bump or a protocol update surfaces even on a day nobody touched the
+      # crate.
+      - name: Detect contracts/ changes
+        id: filter
+        if: github.event_name != 'schedule'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            contracts:
+              - 'contracts/**'
+
+      - name: Install Rust
+        if: github.event_name == 'schedule' || steps.filter.outputs.contracts == 'true'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Cache cargo
+        if: github.event_name == 'schedule' || steps.filter.outputs.contracts == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+
+      - name: cargo test
+        if: github.event_name == 'schedule' || steps.filter.outputs.contracts == 'true'
+        working-directory: contracts
+        run: cargo test --workspace

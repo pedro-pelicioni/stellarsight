@@ -453,6 +453,16 @@
       "label": "conformance",
       "run": "33750676484",
       "recordedAt": "2026-09-03T11:38:02.474Z"
+    },
+    "f1d9c459aeac0e92330451e2a41115d6ddff0953136581418442241d0fef4520": {
+      "label": "setup",
+      "run": "contracts/upto/deploy-testnet.sh",
+      "recordedAt": "2026-09-02T13:08:53.150Z"
+    },
+    "62846cad7a356bf422d5ce1aa03dee92c9bf3e891dc02146b141808445af1029": {
+      "label": "setup",
+      "run": "contracts/upto/deploy-testnet.sh",
+      "recordedAt": "2026-09-02T13:10:27.165Z"
     }
   }
 }
