@@ -1,0 +1,117 @@
+# THREAT-MODEL.md T6, page severity: a drained fee-payer stops every settlement at once.
+# MONITORING.md classifies fee-payer runway as immediate ("Page"), so this runs on its own
+# cadence rather than riding along with nightly-evidence.yml's once-a-day job — the check
+# itself is a couple of cheap Horizon reads, not a settlement, so a tighter interval costs
+# almost nothing.
+#
+# Deliberately read-only against the repo: this workflow never emits or commits evidence
+# (scripts/monitor:feepayer runs without --emit here). docs/status/feepayer.json is written
+# once a night by nightly-evidence.yml instead — two workflows on different cadences both
+# committing would race nightly-evidence.yml's unguarded `git pull --rebase && git push`.
+# That split is also why this workflow only needs `issues: write`, not `contents: write`.
+name: Fee-payer drain alert
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+# One run pages, or one run closes the page — never both disagreeing about the same
+# 6-hour window because two runs overlapped.
+concurrency:
+  group: feepayer-alert
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  # A public key, not a secret (docs/DEPLOY.md says so explicitly) — already published in
+  # README.md and docs/TESTNET-TXS.md.
+  FEEPAYER_PUBLIC: GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT
+
+jobs:
+  check:
+    name: check fee-payer runway
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # No --emit: this workflow reads the account, it does not write or commit evidence.
+      - name: Measure the fee-payer's runway
+        id: runway
+        run: |
+          set +e
+          OUTPUT="$(npm run --silent monitor:feepayer -- --feepayer "$FEEPAYER_PUBLIC" 2>&1)"
+          STATUS=$?
+          echo "$OUTPUT"
+          {
+            echo "output<<RUNWAY_EOF"
+            echo "$OUTPUT"
+            echo "RUNWAY_EOF"
+          } >> "$GITHUB_OUTPUT"
+          if [ $STATUS -ne 0 ]; then echo "breach=true" >> "$GITHUB_OUTPUT"; else echo "breach=false" >> "$GITHUB_OUTPUT"; fi
+
+      # gh issue create refuses an unknown label; --force makes this safe to run every
+      # time rather than a one-off setup step someone has to remember.
+      - name: Ensure the alert label exists
+        run: |
+          gh label create feepayer-alert \
+            --repo "$GITHUB_REPOSITORY" \
+            --color b60205 \
+            --description "Automated fee-payer drain alert (THREAT-MODEL.md T6)" \
+            --force
+
+      # Search, then edit-in-place or reopen, rather than always creating — this is the
+      # "one pinned issue instead of a new one per run" the issue asks for.
+      - name: Open or update the pinned alert issue
+        if: steps.runway.outputs.breach == 'true'
+        env:
+          RUNWAY_OUTPUT: ${{ steps.runway.outputs.output }}
+        run: |
+          EXISTING="$(gh issue list --repo "$GITHUB_REPOSITORY" --label feepayer-alert --state open --json number --jq '.[0].number // empty')"
+          RUN_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          BODY_FILE="$(mktemp)"
+          {
+            echo "Automated check from \`.github/workflows/feepayer-alert.yml\`, run ${RUN_AT}."
+            echo
+            echo '```'
+            echo "$RUNWAY_OUTPUT"
+            echo '```'
+            echo
+            echo "Thresholds and the expected response: https://github.com/${GITHUB_REPOSITORY}/blob/main/docs/MONITORING.md#fee-sponsorship--the-drain-surface"
+          } > "$BODY_FILE"
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
+            gh issue reopen "$EXISTING" --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+            echo "updated #$EXISTING"
+          else
+            gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Fee-payer drain alert" \
+              --label feepayer-alert \
+              --body-file "$BODY_FILE"
+          fi
+
+      # Recovery: the next clean run closes whatever alert issue is open, so a resolved
+      # drain does not leave a stale Page-severity issue sitting open indefinitely.
+      - name: Close the alert issue on recovery
+        if: steps.runway.outputs.breach == 'false'
+        run: |
+          EXISTING="$(gh issue list --repo "$GITHUB_REPOSITORY" --label feepayer-alert --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" \
+              --body "Back within thresholds as of $(date -u +%Y-%m-%dT%H:%M:%SZ) — closing."
+            gh issue close "$EXISTING" --repo "$GITHUB_REPOSITORY"
+            echo "closed #$EXISTING"
+          fi
