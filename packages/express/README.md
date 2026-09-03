@@ -188,9 +188,76 @@ pay.routes()             // [{ method, path, price, amount, asset, payTo, servic
 pay.wellKnown(origin?)   // the /.well-known/x402 body
 pay.wellKnownHandler()   // an Express handler serving it
 await pay.announce()     // announce now -> { announced[], skipped[{route,reason}], failed[{route,reason}] }
+pay.announceRecords()    // [{ method, path, record }] — the records announce() would send, unsent
+pay.check()              // replay those records through the bazaar index's own validator, offline
 pay.stop()               // clear the announce timers
 pay.config               // frozen view of the resolved configuration
 ```
+
+## CLI: `stellarsight-seller check`
+
+A rejected or silently soft-dropped listing has historically surfaced only after boot — a
+`could not announce` warning in the seller's own log, or nothing at all when the index
+drops a field. `stellarsight-seller check` runs the bazaar index's own integrity validator
+(`@stellarsight/index`) against every route's announce record **before** you ever announce,
+with no facilitator or index running and nothing sent over the network:
+
+```bash
+npx stellarsight-seller check
+npx stellarsight-seller check --json     # machine-readable, for scripts
+npx stellarsight-seller check --config ./path/to/stellarsight.config.mjs
+```
+
+```
+ok    GET   /v1/weather/:city
+FAIL  POST  /v1/ocr/invoice   resource.url host is not publicly reachable (IPv4 private range)
+
+1/2 route(s) ok, 1 rejected
+```
+
+Exit code is `1` on any rejection, `0` otherwise — gate your own CI on it.
+
+**Config file contract.** By default the CLI loads `stellarsight.config.mjs` (or `.js`)
+from the current directory; `--config` points it elsewhere. That module must export the
+object `stellarsightPaywall()` returns, with every route already declared via `pay(...)`,
+as its default export or a named `pay` export:
+
+```js
+// stellarsight.config.mjs
+import { stellarsightPaywall } from '@stellarsight/express'
+
+const pay = stellarsightPaywall({
+  facilitator: process.env.FACILITATOR_URL,
+  payTo: process.env.SELLER_PUBLIC,
+  asset: process.env.ASSET_SAC,
+  baseUrl: process.env.SELLER_URL,   // required — see pay.check() below
+  index: process.env.INDEX_URL,
+})
+
+export const weatherRoute = pay('/v1/weather/:city', {
+  price: '0.02',
+  serviceName: 'acme-weather',
+})
+
+export default pay
+```
+
+Your real server imports the same module and attaches the already-built middleware —
+nothing is declared twice, so the config the CLI checks can never drift from what you
+actually serve:
+
+```js
+// server.mjs
+import pay, { weatherRoute } from './stellarsight.config.mjs'
+
+app.get('/v1/weather/:city', weatherRoute, (req, res) => res.json({ tempC: 21.4 }))
+app.get('/.well-known/x402', pay.wellKnownHandler())
+app.listen(PORT)
+```
+
+`pay.check()` needs `baseUrl` set — without it, no route has an absolute resource URL and
+nothing would ever be announced either, so the CLI reports why instead of a per-route
+reason.
 
 ## CORS
 

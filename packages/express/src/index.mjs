@@ -28,6 +28,7 @@
  */
 
 export { stellarsightPaywall } from "./paywall.mjs";
+export { checkListings } from "./check.mjs";
 export {
   DEFAULTS,
   X402_ALLOWED_HEADERS,
