@@ -1,8 +1,8 @@
 {
   "kind": "rejections",
-  "generatedAt": "2026-09-03T11:38:07.399Z",
-  "commit": "3c91981",
-  "node": "v22.23.2",
+  "generatedAt": "2026-09-04T11:44:01.617Z",
+  "commit": "31a4b2a",
+  "node": "v24.19.0",
   "network": "stellar:testnet",
   "ok": true,
   "stack": {
