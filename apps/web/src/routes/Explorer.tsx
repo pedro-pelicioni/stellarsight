@@ -164,6 +164,16 @@ export default function Explorer() {
           </p>
         )}
 
+        {!feed && !error && (
+          <p className="xp-banner" role="status">
+            Reading this deployment's settlements from Horizon…
+          </p>
+        )}
+
+        {feed?.ok && !rows.length && (
+          <p className="xp-banner">No settlements from this fee-payer yet.</p>
+        )}
+
         {error && !rows.length && (
           <>
             <p className="xp-banner">

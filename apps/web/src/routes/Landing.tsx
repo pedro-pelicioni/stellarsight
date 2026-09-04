@@ -12,10 +12,15 @@ import { OrbitRing } from '../components/OrbitRing'
 import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
 import counts from '../data/counts.json'
 import { explorerTx, shortHash } from '../lib/format'
+import { SCORE_MAX, WEIGHTS } from '../lib/rank'
 import { RevealGroup } from '../lib/reveal'
 import type { Catalog } from '../lib/types'
 
 const GITHUB = 'https://github.com/pedro-pelicioni/stellarsight'
+
+/** Each part's share of the ranking ceiling, so the meter is drawn from the same
+ *  weights the ranker uses rather than from percentages typed beside them. */
+const share = (w: number) => `${((w / SCORE_MAX) * 100).toFixed(1)}%`
 
 /**
  * Three representative verdicts for the bento card — one rejection, then the two most
@@ -68,7 +73,8 @@ const API_CHECKS = counts.apiChecks
  * `conformance:`, `load:`); the setup and cleanup operations that created the accounts
  * are transactions but not payments.
  */
-const SETTLED_PAYMENTS = testnetTxs.filter((t) => /^(demo|conformance|load)/i.test(t.label ?? '')).length
+const isPayment = (t: { label?: string }) => /^(demo|conformance|load)/i.test(t.label ?? '')
+const SETTLED_PAYMENTS = testnetTxs.filter(isPayment).length
 /** Of API_CHECKS, the ones driven through the unmodified @x402/extensions client. */
 const STOCK_CLIENT_CHECKS = counts.stockClientChecks
 
@@ -87,10 +93,8 @@ function Terminal() {
   return (
     <div className="terminal">
       <div className="terminal__bar">
-        <span className="terminal__dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
+        <span className="terminal__method" aria-hidden="true">
+          GET
         </span>
         <span className="terminal__title">stellarsight.xyz — discovery/search</span>
         <span className="terminal__title" style={{ marginLeft: 'auto' }}>
@@ -199,7 +203,7 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const paymentTxs = testnetTxs.slice(0, 8)
+  const paymentTxs = testnetTxs.filter(isPayment).slice(0, 8)
 
   return (
     <div className="theme">
@@ -337,7 +341,7 @@ export default function Landing() {
                 <StarGlyph /> What ships
               </span>
               <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
-                Discovery is the missing half of x402. <em>This is it, running.</em>
+                The missing half of x402, <em>running</em> on testnet.
               </h2>
               <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
                 An agent that can pay but cannot discover is an agent with a wallet and no map.
@@ -394,14 +398,14 @@ export default function Landing() {
                 </p>
                 <div className="bento__code" aria-label="Ranking formula">
                   <span className="formula">
-                    <b>1.00</b>·bm25 + <b>0.12</b>·completeness + <b>0.08</b>·popularity +{' '}
-                    <b>0.05</b>·recency
+                    <b>{WEIGHTS.bm25.toFixed(2)}</b>·bm25 + <b>{WEIGHTS.metadata.toFixed(2)}</b>·completeness +{' '}
+                    <b>{WEIGHTS.settlements.toFixed(2)}</b>·popularity + <b>{WEIGHTS.recency.toFixed(2)}</b>·recency
                   </span>
                   <span className="minibar" aria-hidden="true">
-                    <i className="seg--bm25" style={{ width: '80%' }} />
-                    <i className="seg--metadata" style={{ width: '9.6%' }} />
-                    <i className="seg--settlements" style={{ width: '6.4%' }} />
-                    <i className="seg--recency" style={{ width: '4%' }} />
+                    <i className="seg--bm25" style={{ width: share(WEIGHTS.bm25) }} />
+                    <i className="seg--metadata" style={{ width: share(WEIGHTS.metadata) }} />
+                    <i className="seg--settlements" style={{ width: share(WEIGHTS.settlements) }} />
+                    <i className="seg--recency" style={{ width: share(WEIGHTS.recency) }} />
                   </span>
                   <span className="minibar__legend">
                     <span>
@@ -554,7 +558,7 @@ export default function Landing() {
                 <StarGlyph /> One index
               </span>
               <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
-                Every client orbits <em>the same catalog.</em>
+                One catalog, <em>every</em> client.
               </h2>
               <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
                 The four MCP tools and the <code>/discovery/*</code> routes are two doors into one
