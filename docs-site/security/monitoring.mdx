@@ -32,7 +32,7 @@ concurrency. Post-pool numbers replace these.
 | Signal | Source | Threshold | Response | Today |
 |---|---|---|---|---|
 | `FEEPAYER` XLM balance | Horizon account | \< 7 days of burn at trailing rate | Top up; runbook below | ✅ measured nightly, alerted every 6h |
-| Fee burn rate | balance delta per hour | > 3× the trailing 24h median | Possible drain attempt — inspect payer dispersion, consider rate limits | ✅ measured nightly, alerted every 6h |
+| Fee burn rate | balance delta per hour | > 3× the trailing 24h median **and** above a 0.5 XLM/h floor | Possible drain attempt — inspect payer dispersion, consider rate limits | ✅ measured nightly, alerted every 6h |
 | Per-transaction fee | settlement result | > 250,000 stroops (half the 500k ceiling) | Network conditions moved; re-derive the ceiling with evidence, as it was derived originally | ✅ measured nightly, alerted every 6h |
 | Rejections at the fee ceiling | `/verify` outcomes | any sustained run | The ceiling is now too tight and is silently refusing valid payments — the exact failure the 500k calibration fixed once already | ⬜ |
 
@@ -46,6 +46,15 @@ since a runway signal classified **Page** (immediate, see below) sitting behind 
 check is a contradiction — and on a breach opens or updates one pinned issue labeled
 `feepayer-alert` rather than a new one per run, closing it automatically on the next clean
 run.
+
+The floor under the burn-rate row is there because of the account's own shape: on a quiet
+day 23 of the 24 hourly buckets are empty, the trailing median is 0, and "more than 3× the
+median" would read as "any fee in the trailing hour". One playground payment in the hour
+before a scheduled check would then open a public drain alert. 0.5 XLM/h is about a hundred
+sponsored settlements at the ~50,000-stroop fee the nightly run pays — far above anything
+this deployment has seen, and still under 0.01% of the balance. Below it, the runway row is
+the one that matters; above it, the multiplier still has to be cleared (`--burn-floor-stroops`
+in `scripts/feepayer-runway.mjs`).
 
 **Runbook: topping up.** On testnet, Friendbot funds an existing account, not only new
 ones — confirmed live: `curl "https://friendbot.stellar.org?addr=$FEEPAYER_PUBLIC"` added

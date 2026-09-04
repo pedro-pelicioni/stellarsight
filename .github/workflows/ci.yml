@@ -34,7 +34,7 @@ jobs:
     # are the ones needing a live local stack — the agent's replay guard and the live
     # halves of the replay-naming suite, which want a facilitator on localhost:4021.
     # Booting the full stack inside CI would test the boot, not the guard; the nightly
-    # settles against the deployment instead. Current shape: 276 tests, 0 failing.
+    # settles against the deployment instead. Current shape: 279 tests, 0 failing.
     services:
       redis:
         image: redis:7-alpine
