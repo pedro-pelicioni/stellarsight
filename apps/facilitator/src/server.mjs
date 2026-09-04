@@ -7,7 +7,7 @@
  * disqualifying for this project. All verify/settle cryptography comes from the
  * Apache-2.0 `@x402/stellar` package; we never reimplement it.
  *
- * Real symbols used (verified against node_modules, not invented):
+ * Real symbols used:
  *   @x402/stellar/exact/facilitator -> ExactStellarScheme  (class; .verify/.settle)
  *   @x402/stellar                   -> createEd25519Signer
  *   @x402/core/facilitator          -> x402Facilitator     (class; .register/.registerExtension/.getSupported/.verify/.settle)

@@ -22,7 +22,8 @@
  * stdout is the MCP transport — every diagnostic goes to stderr, never stdout.
  */
 
-import { pathToFileURL } from 'node:url';
+import { readFileSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -31,7 +32,7 @@ import { z } from 'zod';
 import { ERROR_CODES, fail, loadConfig, payAndFetch } from './pay.mjs';
 import { browse, describe, search } from './bazaar.mjs';
 
-const VERSION = '0.1.0';
+const VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
 /* ------------------------------------------------------------------ *
  * T5 Prompt Injection Defense — Untrusted Text Markers
@@ -442,7 +443,19 @@ async function main() {
   process.stderr.write('[stellarsight] ready on stdio\n');
 }
 
-if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+// Run `main` only when this file is the entry point. Resolve argv[1] through the
+// filesystem: an npm-linked bin (`stellarsight-mcp`) is a symlink, and the URL of the
+// symlink never equals import.meta.url, which is the real path.
+const invokedDirectly = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+})();
+
+if (invokedDirectly) {
   main().catch((err) => {
     process.stderr.write(`[stellarsight] fatal: ${err instanceof Error ? err.stack : String(err)}\n`);
     process.exit(1);

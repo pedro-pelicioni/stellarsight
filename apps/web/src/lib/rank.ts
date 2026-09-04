@@ -45,7 +45,7 @@ const RECENCY_HALF_LIFE_DAYS = 14
 const K1 = 1.4
 const B = 0.72
 
-export function normalize(s: string): string {
+function normalize(s: string): string {
   return s
     .toLowerCase()
     .normalize('NFD')
@@ -70,7 +70,7 @@ function fieldsOf(r: StellarsightRecord): Fields {
 }
 
 /** 0..1 — how completely the seller filled out the advertisement */
-export function metadataScore(r: StellarsightRecord): { score: number; missing: string[] } {
+function metadataScore(r: StellarsightRecord): { score: number; missing: string[] } {
   const checks: [string, boolean][] = [
     ['serviceName', Boolean(r.resource?.serviceName)],
     ['description ≥ 80', (r.resource?.description ?? '').length >= 80],

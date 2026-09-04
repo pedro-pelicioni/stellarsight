@@ -70,7 +70,7 @@ const RING_PHASE = 29
  * catalog indexes on the inside, the four MCP tools on the outside — the same
  * four named in the "MCP server" card on the landing page.
  */
-export const ORBIT_RINGS_DEFAULT: readonly (readonly string[])[] = [
+const ORBIT_RINGS_DEFAULT: readonly (readonly string[])[] = [
   ['HTTP', 'MCP'],
   ['stellarsight_search', 'stellarsight_browse', 'stellarsight_describe', 'stellarsight_pay'],
 ]

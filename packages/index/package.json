@@ -1,7 +1,7 @@
 {
   "name": "@stellarsight/index",
-  "version": "1.0.0",
-  "description": "STELLARSIGHT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
+  "version": "1.1.0",
+  "description": "STELLARSIGHT — facilitator-side x402 bazaar catalog and search index for Stellar",
   "author": "Pedro Pelicioni",
   "type": "module",
   "main": "./src/index.mjs",

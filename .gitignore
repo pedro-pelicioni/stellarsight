@@ -7,17 +7,6 @@ dist/
 coverage/
 target/
 
-.claude/
 .vercel
 .env*
-
 scf/
-
-# research, draft upstream texts. It lives OUTSIDE this repository, at ../scf, and must
-# never be published here. These patterns are belt-and-braces: if anything is ever copied
-# in by mistake, git refuses to stage it.
-scf/
-**/scf/
-*panel-brief*
-*upstream-drafts*
-*pr-*-ready.md

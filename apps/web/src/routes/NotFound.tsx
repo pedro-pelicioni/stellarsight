@@ -4,15 +4,21 @@ import { StellarsightMark } from '../components/Marks'
 
 /**
  * The catch-all. The SPA rewrite in vercel.json answers 200 for every path, so the page
- * itself has to say that nothing lives here, rather than quietly rendering the landing.
+ * itself has to say that nothing lives here — to the reader, and to crawlers via `noindex`.
  */
 export default function NotFound() {
   const { pathname } = useLocation()
   useEffect(() => {
     const previous = document.title
     document.title = 'Not found — STELLARSIGHT'
+    // The rewrite answers 200, so the page has to tell crawlers itself that it is not one.
+    const robots = document.createElement('meta')
+    robots.name = 'robots'
+    robots.content = 'noindex'
+    document.head.appendChild(robots)
     return () => {
       document.title = previous
+      robots.remove()
     }
   }, [])
 
