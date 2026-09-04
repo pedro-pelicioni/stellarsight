@@ -22,11 +22,6 @@ export const FAUCET_URL = override(
   import.meta.env.PROD ? SAME_ORIGIN : 'http://localhost:4021',
 )
 
-export const FACILITATOR_URL = override(
-  import.meta.env.VITE_FACILITATOR_URL,
-  import.meta.env.PROD ? SAME_ORIGIN : 'http://localhost:4021',
-)
-
 /** Testnet, hardcoded. The playground signs with a key it generated; it never touches pubnet. */
 export const NETWORK = 'stellar:testnet'
 export const RPC_URL = 'https://soroban-testnet.stellar.org'

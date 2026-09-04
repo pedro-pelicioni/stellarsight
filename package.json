@@ -1,7 +1,7 @@
 {
   "name": "stellarsight",
   "version": "1.0.0",
-  "description": "STELLARSIGHT \u2014 find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
+  "description": "STELLARSIGHT — find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
   "type": "module",
   "private": true,
   "license": "Apache-2.0",
@@ -23,25 +23,22 @@
     "dev:web": "npm --workspace apps/web run dev",
     "dev:all": "concurrently -n facilitator,seller -c cyan,magenta \"npm run dev:facilitator\" \"npm run dev:seller\"",
     "demo": "node scripts/demo-loop.mjs",
-    "cleanup": "node scripts/cleanup-legacy-asset.mjs",
     "test": "node scripts/run-tests.mjs",
     "verify:api": "node scripts/verify-serverless.mjs",
     "verify:conformance": "node scripts/verify-conformance.mjs",
     "verify:rejections": "node scripts/verify-rejections.mjs",
     "evidence:batch": "node scripts/evidence-batch.mjs",
     "evidence:build": "node scripts/build-evidence.mjs",
-  "evidence:footprint": "node scripts/soroban-footprint.mjs",
-  "audit:licenses": "node scripts/license-audit.mjs",
+      "evidence:footprint": "node scripts/soroban-footprint.mjs",
+    "evidence:footprint:upto": "node scripts/soroban-upto-footprint.mjs",
+      "audit:licenses": "node scripts/license-audit.mjs",
     "eval:search": "node scripts/eval-search.mjs",
     "eval:search:report": "node scripts/eval-search.mjs --report",
     "load:baseline": "node scripts/load-baseline.mjs",
-  "latency:discovery": "node scripts/latency-baseline.mjs",
+      "latency:discovery": "node scripts/latency-baseline.mjs",
     "monitor:feepayer": "node scripts/feepayer-runway.mjs",
-    "test:agent": "node --test apps/agent/src/replay-guard.test.mjs",
-    "demo:agent": "node apps/agent/src/cli.mjs",
-    "mcp": "node apps/agent/src/mcp-server.mjs",
     "check:bazaar": "node scripts/check-bazaar-client.mjs",
-  "verify:interop": "node scripts/interop-discovery.mjs",
+      "verify:interop": "node scripts/interop-discovery.mjs",
     "docs:sync": "node scripts/sync-docs-site.mjs"
   },
   "dependencies": {
@@ -59,8 +56,5 @@
     "picocolors": "^1.1.1",
     "redis": "^6.2.0",
     "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@resvg/resvg-js": "^2.6.2"
   }
 }

@@ -177,5 +177,3 @@ export function replayReason(identity) {
     `when it settled, and the chain would reject this submission regardless. Sign a fresh payment.`
   );
 }
-
-export default { authIdentity, seen, remember, replayReason, resetMemory };

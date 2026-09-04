@@ -51,5 +51,3 @@ export function payloadShape(decoded) {
     verbatim: transactionIsString && keys.length === 1 && keys[0] === 'transaction',
   };
 }
-
-export default { decodePaymentHeader, innerPayload, payloadShape };

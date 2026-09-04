@@ -148,9 +148,8 @@ function Sight({
           {/*
             The index never emits `seeded: false` — a live announcement CLEARS the flag —
             so absence is correct provenance on the live path and cannot be tightened.
-            It is only misleading in the baked fixture, three of whose rows are localhost
-            dev-server URLs that no visitor can reach, let alone pay. So the distinction is
-            about where the rows came from, not about any field on the record.
+            In the baked fixture the distinction is about where the rows came from, not
+            about any field on the record.
           */}
           <span className="dot" />
           {source === 'demo' ? 'Fixture' : rec.seeded ? 'Catalog' : 'Live · Payable'}

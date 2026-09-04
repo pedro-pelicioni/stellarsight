@@ -16,6 +16,7 @@
   },
   "files": [
     "src",
+    "!src/*.test.mjs",
     "README.md",
     "LICENSE"
   ],

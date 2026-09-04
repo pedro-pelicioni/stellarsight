@@ -106,10 +106,8 @@ deployment served the wire shape. It is closed. The facilitator now calls
 `mountDiscoveryRoutes(indexApp, catalog)`, and `apps/agent/src/bazaar.mjs` reads either
 shape through one `fieldsOf()` accessor rather than reaching for `rec.resource.url`.
 
-`GET /health` on `:4022` reports `wireShape: "spec"` when the shared routes are mounted,
-and `"internal-stub"` in the one degraded case that remains — `packages/index` failing to
-import at all, where the facilitator falls back to its in-memory stub and says so rather
-than pretending to be spec-shaped.
+`GET /health` on `:4022` reports `wireShape: "spec"`: the shared routes are the only ones
+there are.
 
 ```js
 {

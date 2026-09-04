@@ -83,13 +83,6 @@
   z-index: 1;
 }
 
-/* --- placement: standalone ------------------------------------------------
-   A plain square block, for sitting beside content in its own column. */
-.globe--fit {
-  width: 100%;
-  max-width: 22rem;
-  margin-inline: auto;
-}
 
 /* Narrow viewports stack the cards full width, which would blow the backdrop
    up to fill them. Pull it back and quiet it further — on a phone the text is

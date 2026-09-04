@@ -1,15 +1,14 @@
-import { Fragment, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
 /**
  * Scroll-triggered reveal, done with one shared IntersectionObserver.
  *
- * The mechanism is the one every "in view" component on 21st.dev uses under its
- * animation library: observe the block, and when it is *meaningfully* on screen
- * — not the instant its first pixel crosses the fold — flip it from a hidden to
- * a visible state and stop observing. The negative bottom root margin is what
- * buys the "meaningfully"; without it, blocks animate while still under the
- * fold and the reader never sees the motion.
+ * Observe the block, and when it is *meaningfully* on screen — not the instant
+ * its first pixel crosses the fold — flip it from a hidden to a visible state and
+ * stop observing. The negative bottom root margin is what buys the "meaningfully";
+ * without it, blocks animate while still under the fold and the reader never sees
+ * the motion.
  *
  * Everything past that point is CSS (see base.css): the observer only sets
  * `data-in`, and descendants stagger off their own `--i`. No scroll listener,
@@ -74,63 +73,5 @@ export function RevealGroup({
     <div ref={ref} className={className} style={style} id={id}>
       {children}
     </div>
-  )
-}
-
-/* ------------------------------------------------------------------ headings */
-
-type Run = { text: string; em: boolean }
-
-/**
- * Split a heading into words so each can carry its own delay — the text-reveal
- * technique, reduced to its useful core. Emphasis is marked with asterisks so
- * the copy stays readable in the JSX: `Four steps, *one* round trip.`
- *
- * Splitting happens per word but tracks emphasis per character run, so
- * `*what exists*.` keeps the full stop outside the italic, exactly as the
- * hand-written `<em>` did.
- */
-function tokenize(text: string): Run[][] {
-  const words: Run[][] = []
-  let em = false
-  for (const raw of text.split(/\s+/)) {
-    if (!raw) continue
-    const runs: Run[] = []
-    let buf = ''
-    for (const ch of raw) {
-      if (ch === '*') {
-        if (buf) runs.push({ text: buf, em })
-        buf = ''
-        em = !em
-      } else {
-        buf += ch
-      }
-    }
-    if (buf) runs.push({ text: buf, em })
-    words.push(runs)
-  }
-  return words
-}
-
-/**
- * The rendered text is identical to writing it inline — real text nodes, real
- * spaces, real `<em>`. Screen readers and text selection are unaffected; the
- * only addition is an inline-block wrapper per word carrying its index.
- */
-export function SplitLine({ text, from = 0 }: { text: string; from?: number }) {
-  const words = tokenize(text)
-  return (
-    <>
-      {words.map((runs, i) => (
-        <Fragment key={i}>
-          <span className="rise wd" style={{ '--i': from + i } as CSSProperties}>
-            {runs.map((r, j) =>
-              r.em ? <em key={j}>{r.text}</em> : <Fragment key={j}>{r.text}</Fragment>,
-            )}
-          </span>
-          {i < words.length - 1 ? ' ' : null}
-        </Fragment>
-      ))}
-    </>
   )
 }

@@ -208,5 +208,3 @@ export function rateLimitStatus(env = process.env) {
     windowSeconds: intFromEnv(env.FACILITATOR_RATE_WINDOW_S, 60) || 60,
   };
 }
-
-export default { createRateLimit, rateLimitStatus, clientIpHash, intFromEnv };

@@ -51,14 +51,11 @@ const HERO_CMD: CodeSpan[] = [
 ]
 
 /**
- * Counts a visitor can falsify by running the command printed beside them. They used to be
- * typed here, which failed twice: first as a hand-typed 84 in the strip and 129 in the block
- * for the same `npm test`, eighty lines apart; then as 205 tests and 46 API checks that stayed
- * on the live site after the repository had moved to 239 and 49.
- *
- * They now come from `apps/web/src/data/counts.json`, written by `npm run evidence:build` from
+ * Counts a visitor can falsify by running the command printed beside them. They come from
+ * `apps/web/src/data/counts.json`, written by `npm run evidence:build` from
  * `scripts/lib/counts.mjs`, which derives them from the test files and the conformance harness
  * themselves. `test/docs-consistency.test.mjs` fails the build if this file falls behind.
+ * Never type a number here.
  */
 const TEST_COUNT = counts.tests
 const API_CHECKS = counts.apiChecks

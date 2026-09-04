@@ -19,13 +19,10 @@
  * That last one is the load-bearing check, and it does NOT inspect raw JSON. It imports
  * the real `withBazaar` from `@x402/extensions`, points it at these handlers over a real
  * socket, and asserts on what THE CLIENT hands back — then re-validates every `accepts`
- * entry with `@x402/core`'s own `PaymentRequirementsSchema`. An earlier version of this file
- * asserted "the shape is spec-exact" by reading the field names the repo itself emits,
- * which is a belief, not an observation: it agreed with the bug it was meant to catch
- * (search emitted `items` where `SearchDiscoveryResourcesResponse` declares `resources`,
- * and no item carried `accepts`, so `withBazaar(client).search()` returned `undefined`
- * and a stock consumer could not construct a payment). Assert on the client, not on the
- * server's own vocabulary.
+ * entry with `@x402/core`'s own `PaymentRequirementsSchema`. Reading the field names the repo
+ * itself emits would agree with the bug this exists to catch (search once emitted `items`
+ * where `SearchDiscoveryResourcesResponse` declares `resources`, and `withBazaar(client).search()`
+ * returned `undefined`), so the assertion is on what the client returns.
  *
  * It is deliberately NOT named *.test.mjs: `npm test` counts suites, and this is a
  * deployment check rather than a unit suite.
