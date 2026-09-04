@@ -87,8 +87,7 @@ export async function fetchNativeBalance(horizonUrl, feePayer, fetchImpl) {
 
 /**
  * Every transaction (successful or not) on `feePayer`'s account with `created_at` no
- * older than `sinceMs`, newest first, following Horizon's `_links.next.href` pagination —
- * no existing script in this repo pages Horizon transactions past one page, so this is new.
+ * older than `sinceMs`, newest first, following Horizon's `_links.next.href` pagination.
  */
 export async function fetchTransactionsSince({ horizonUrl, feePayer, sinceMs, fetchImpl, pageLimit = HORIZON_PAGE_LIMIT }) {
   const base = trim(horizonUrl);

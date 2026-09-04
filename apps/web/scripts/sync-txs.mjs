@@ -1,4 +1,4 @@
-// Pulls real testnet tx hashes out of docs/TESTNET-TXS.md (written by another agent)
+// Pulls real testnet tx hashes out of docs/TESTNET-TXS.md
 // into src/data/testnet-txs.json. Never fails the build: always exits 0.
 //
 // Each hash is then dated against Horizon. The console REPLAYS one of these as the

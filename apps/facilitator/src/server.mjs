@@ -26,6 +26,8 @@ import { createEd25519Signer } from "@x402/stellar";
 import { ExactStellarScheme } from "@x402/stellar/exact/facilitator";
 import { x402Facilitator } from "@x402/core/facilitator";
 import { BAZAAR, validateAndExtract } from "@x402/extensions/bazaar";
+import { createCatalog } from "../../../packages/index/src/index.mjs";
+import { mountDiscoveryFallback, mountDiscoveryRoutes } from "../../../packages/index/src/http.mjs";
 
 import { createFaucetHandler } from "./faucet.mjs";
 import { createRateLimit, rateLimitStatus } from "./rate-limit.mjs";
@@ -60,78 +62,7 @@ if (!ASSET_SAC) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------------------
-// Bazaar index — owned by another agent (packages/index). Import defensively so
-// this server always boots; fall back to a tiny in-memory catalog with the same
-// API surface described in CONTRACT.md.
-// ---------------------------------------------------------------------------
-
-let indexPkg = null;
-let usingIndexStub = false;
-
-try {
-  indexPkg = await import("../../../packages/index/src/index.mjs");
-  if (typeof indexPkg.createCatalog !== "function") {
-    throw new Error("createCatalog not exported");
-  }
-  console.log("[facilitator] packages/index loaded (real implementation)");
-} catch (e) {
-  usingIndexStub = true;
-  console.warn(`[facilitator] packages/index unavailable (${e.message}) — using in-memory stub`);
-  // Deliberate fallback, not a migration leftover: keeps the facilitator bootable when
-  // packages/index cannot be imported (partial checkout, packaging error). Same public
-  // API, naive substring matching instead of BM25; /health reports wireShape
-  // "internal-stub" while this is active.
-  indexPkg = {
-    createCatalog() {
-      const store = new Map();
-      return {
-        upsert(record) {
-          if (!record?.id) return { ok: false, dropped: [], reason: "record.id is required" };
-          store.set(record.id, { ...store.get(record.id), ...record });
-          return { ok: true, dropped: [] };
-        },
-        list({ type, payTo, scheme, network, extensions, limit = 20, offset = 0 } = {}) {
-          let items = [...store.values()];
-          if (type) items = items.filter((i) => i.type === type);
-          if (payTo) items = items.filter((i) => i.payTo === payTo);
-          if (scheme) items = items.filter((i) => i.scheme === scheme);
-          if (network) items = items.filter((i) => i.network === network);
-          if (extensions) {
-            const want = Array.isArray(extensions) ? extensions : [extensions];
-            items = items.filter((i) => want.every((w) => (i.extensions ?? []).includes(w)));
-          }
-          const total = items.length;
-          return { items: items.slice(offset, offset + limit), total, limit, offset };
-        },
-        search({ query = "", limit = 20, cursor } = {}) {
-          const q = String(query).toLowerCase().trim();
-          const all = [...store.values()];
-          const items = q
-            ? all.filter((i) => JSON.stringify(i).toLowerCase().includes(q))
-            : all;
-          const start = cursor ? Number(cursor) || 0 : 0;
-          const page = items.slice(start, start + limit);
-          const nextCursor = start + limit < items.length ? String(start + limit) : null;
-          return {
-            items: page,
-            partialResults: false,
-            pagination: { limit, cursor: nextCursor },
-          };
-        },
-        size: () => store.size,
-      };
-    },
-    validateResourceBlock: (block) => ({ value: block, dropped: [] }),
-    validateRouteTemplate: (t) =>
-      typeof t === "string" && t.startsWith("/")
-        ? { valid: true }
-        : { valid: false, reason: "routeTemplate must be a string starting with /" },
-    scoreHybrid: (_query, docs) => docs,
-  };
-}
-
-const catalog = indexPkg.createCatalog();
+const catalog = createCatalog();
 
 // ---------------------------------------------------------------------------
 // Durable store — the difference between "this instance saw a settlement" and
@@ -151,14 +82,6 @@ const catalog = indexPkg.createCatalog();
 // Optional by design: with no store configured this is null, every write is a no-op that
 // reports `durable: false`, and the in-memory catalog behaves exactly as before.
 // ---------------------------------------------------------------------------
-
-// The Express binding for the discovery wire format, shared with the deployment.
-let indexHttp = null;
-try {
-  indexHttp = await import("../../../packages/index/src/http.mjs");
-} catch (e) {
-  console.warn(`[index] packages/index/src/http.mjs unavailable (${e.message}) — discovery falls back to raw catalog output`);
-}
 
 let durableStore = null;
 let storeStatus = { configured: false, reason: "no durable store configured" };
@@ -541,7 +464,6 @@ app.get("/health", (_req, res) => {
     assetCode: ASSET_CODE,
     feePayer: feePayerSigner.address,
     areFeesSponsored: true,
-    indexBackend: usingIndexStub ? "stub" : "packages/index",
     catalogSize: catalog.size(),
     // Whether a settlement through THIS facilitator ends up in the durable public
     // catalog or only in this process's heap. A reviewer settling against the hosted
@@ -883,84 +805,22 @@ indexApp.get("/health", (_req, res) =>
   res.json({
     ok: true,
     service: "stellarsight-index",
-    backend: usingIndexStub ? "stub" : "packages/index",
     size: catalog.size(),
-    // `spec` means these routes come from packages/index/src/discovery.mjs, i.e. the same
-    // wire format the deployment serves. `internal-stub` is the degraded fallback.
-    wireShape: discoveryMounted ? "spec" : "internal-stub",
+    // The routes come from packages/index/src/discovery.mjs — the same wire format the
+    // deployment serves.
+    wireShape: "spec",
     durableStore: durableStore ? { transport: durableStore.transport, key: durableStore.key } : null,
   }),
 );
 
 /**
- * GET /discovery/resources and GET /discovery/search.
- *
- * These used to be hand-rolled here, returning `catalog.list()` / `catalog.search()`
- * verbatim — i.e. the INTERNAL record shape, where `resource` is a `{ url, serviceName }`
- * block and there is no `accepts` array. The deployment (api/discovery/*) meanwhile served
- * the spec wire shape through packages/index/src/discovery.mjs, so :4022 and
- * stellarsight.xyz disagreed about the format of the same catalog. CONTRACT.md carried
- * that as KNOWN DRIFT.
- *
- * Both surfaces now funnel through the same `mountDiscoveryRoutes`, so there is exactly
- * one definition of the wire format and a stock `withBazaar()` client reads either one.
+ * GET /discovery/resources and GET /discovery/search come from packages/index/src/discovery.mjs
+ * — the same binding api/discovery/* serves, so a stock withBazaar() client reads :4022 and
+ * the deployment identically.
  */
-const discoveryMounted = (() => {
-  if (usingIndexStub) return false; // the stub has no wire projection to mount
-  if (typeof indexHttp?.mountDiscoveryRoutes !== "function") return false;
-  try {
-    const { paths } = indexHttp.mountDiscoveryRoutes(indexApp, catalog);
-    console.log(`[index] discovery routes mounted from packages/index: ${paths.join(", ")}`);
-    return true;
-  } catch (e) {
-    console.warn(`[index] mountDiscoveryRoutes failed (${e.message}) — falling back to raw catalog output`);
-    return false;
-  }
-})();
-
-if (!discoveryMounted) {
-  // Fallback ONLY for the in-memory stub (packages/index absent). Serves the internal
-  // shape and says so, rather than pretending to be spec-shaped.
-  indexApp.get("/discovery/resources", (req, res) => {
-    try {
-      const { type, payTo, scheme, network, extensions } = req.query;
-      const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
-      const offset = Number(req.query.offset ?? 0) || 0;
-      const out = catalog.list({
-        type,
-        payTo,
-        scheme,
-        network,
-        extensions: extensions
-          ? String(extensions)
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : undefined,
-        limit,
-        offset,
-      });
-      res.json({ ...out, _shape: "internal-stub" });
-    } catch (e) {
-      res.status(500).json({ items: [], total: 0, error: reasonOf(e, "list failed") });
-    }
-  });
-
-  indexApp.get("/discovery/search", (req, res) => {
-    try {
-      const { query = "", cursor, type, payTo, scheme, network } = req.query;
-      const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
-      const out = catalog.search({ query, limit, cursor, type, payTo, scheme, network });
-      res.json({ ...out, _shape: "internal-stub" });
-    } catch (e) {
-      res.status(500).json({
-        items: [],
-        partialResults: true,
-        pagination: { limit: 20, cursor: null },
-        error: reasonOf(e, "search failed"),
-      });
-    }
-  });
+{
+  const { paths } = mountDiscoveryRoutes(indexApp, catalog);
+  console.log(`[index] discovery routes mounted from packages/index: ${paths.join(", ")}`);
 }
 
 /** Lets the seller pre-register routes at boot so discovery works before any payment. */
@@ -992,11 +852,9 @@ indexApp.post("/discovery/resources", async (req, res) => {
  * under /discovery — registering it inside mountDiscoveryRoutes would have shadowed the
  * POST write path above.
  */
-if (typeof indexHttp?.mountDiscoveryFallback === "function") {
-  indexHttp.mountDiscoveryFallback(indexApp, {
-    endpoints: ["/discovery/resources", "/discovery/search", "/discovery/integrity"],
-  });
-}
+mountDiscoveryFallback(indexApp, {
+  endpoints: ["/discovery/resources", "/discovery/search", "/discovery/integrity"],
+});
 
 // ---------------------------------------------------------------------------
 // Boot
@@ -1005,9 +863,8 @@ if (typeof indexHttp?.mountDiscoveryFallback === "function") {
 // is imported — api/facilitator.mjs wraps `app` as a Vercel function so /supported,
 // /verify and /settle answer on the public domain — binding ports would crash the
 // runtime. indexApp stays local-only either way; the deployed discovery API is
-// api/discovery/*. Both now mount the SAME mountDiscoveryRoutes from packages/index, so
-// the two surfaces agree on the wire format — the KNOWN DRIFT that CONTRACT.md used to
-// carry is closed — and both write through the same durable store.
+// api/discovery/*. Both mount the same mountDiscoveryRoutes from packages/index, so the two
+// surfaces agree on the wire format and write through the same durable store.
 // ---------------------------------------------------------------------------
 
 const runDirect =
@@ -1028,8 +885,7 @@ if (runDirect) {
   // mounted on a host the operator controls.
   indexApp.listen(INDEX_PORT, "127.0.0.1", () => {
     console.log(`[index]       bazaar index    http://localhost:${INDEX_PORT}`);
-    console.log(`[index]         GET /discovery/resources  /discovery/search`);
-    console.log(`[index]         backend: ${usingIndexStub ? "in-memory stub" : "packages/index"}\n`);
+    console.log(`[index]         GET /discovery/resources  /discovery/search\n`);
   });
 }
 

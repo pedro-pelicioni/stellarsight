@@ -1,21 +1,18 @@
 node_modules/
 dist/
-.env
-.env.local
 *.log
 .DS_Store
 .catalog.json
 .vite/
 coverage/
-_probe_tmp.mjs
 target/
-test_snapshots/
 
 .claude/
 .vercel
 .env*
 
-# SCF submission working material — competitive analysis, panel preparation, reviewer
+scf/
+
 # research, draft upstream texts. It lives OUTSIDE this repository, at ../scf, and must
 # never be published here. These patterns are belt-and-braces: if anything is ever copied
 # in by mistake, git refuses to stage it.

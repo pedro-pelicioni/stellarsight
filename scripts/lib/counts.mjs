@@ -1,15 +1,9 @@
 /**
  * scripts/lib/counts.mjs — the counts this project publishes about itself, derived once.
  *
- * Every number here was hand-typed somewhere at some point, and every one of them went stale:
- * the landing page carried 84 in one strip and 129 in another for the same `npm test`; four
- * mentions of "46 conformance checks" survived the move to 49; the proof strip was still
- * showing 205 tests and 66 adversarial cases after the docs had moved to 239 and 70. The
- * pattern is always the same — the number is true when written and nobody re-checks it.
- *
- * So it is derived, in one place, and both the artifact writer and the consistency test read
- * from here. A counting rule that lived in two files would drift for exactly the same reason
- * the numbers did.
+ * A hand-typed count is true when written and nobody re-checks it. So every published count
+ * is derived here, in one place, and both the artifact writer and the consistency test read
+ * from this module: a counting rule that lived in two files would drift the same way.
  *
  * Static derivation is deliberate: running the suite to count the suite is circular, and
  * `verify:api` needs a network. Counting declarations is cheap enough that the test can do it
@@ -69,5 +63,3 @@ export function deriveCounts() {
 
   return { tests, adversarial, apiChecks, stockClientChecks };
 }
-
-export default { deriveCounts };

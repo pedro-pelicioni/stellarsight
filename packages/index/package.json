@@ -23,7 +23,7 @@
     "redis": "^6.2.0"
   },
   "scripts": {
-    "test": "node --test ../../test/",
+    "test": "node ../../scripts/run-tests.mjs",
     "seed": "node ./src/seed.mjs"
   },
   "license": "Apache-2.0",

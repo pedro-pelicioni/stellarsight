@@ -159,9 +159,7 @@ test('every stated test count matches the tests that exist', () => {
   const adversarial = bySuffix('catalog-integrity.test.mjs');
   const middleware = bySuffix('express-middleware.test.mjs');
 
-  // Claimed in more than one place, and the first version of this guard only checked the
-  // README — so two mentions went stale in ARCHITECTURE and THREAT-MODEL without failing
-  // anything. Scan every file that states it.
+  // Claimed in more than one place; scan every file that states it.
   const adversarialWrong = [];
   for (const file of ['README.md', 'docs-site/quickstart.mdx', 'docs/ARCHITECTURE.md', 'docs/THREAT-MODEL.md']) {
     for (const m of read(file).matchAll(/(\d+)\s+(?:of them\s+|of the repository's tests[^.]*?)?adversarial/g)) {

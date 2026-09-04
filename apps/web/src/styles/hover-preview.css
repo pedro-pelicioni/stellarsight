@@ -226,13 +226,6 @@
   animation-play-state: paused;
 }
 
-/* The tape is two identical runs; only the first is real content. This wraps
-   the duplicate so it can carry `aria-hidden` without becoming a flex item and
-   collapsing the seam. */
-.ticker__run {
-  display: contents;
-}
-
 /* ============================================================
    Reduced motion.
    The card is functional, so it still appears — it just appears,

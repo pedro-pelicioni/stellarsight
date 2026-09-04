@@ -3,13 +3,8 @@
  * REAL catalog validator — `replayHostileCorpus()` from
  * packages/index/src/integrity-replay.mjs — and recording exactly what it returned.
  *
- * Why this script exists: the ledger this feeds used to be hand-written. Its rule
- * names, limits and rejection reasons drifted away from the code until seven of its
- * eight rules named nothing that existed, and its stated caps (16 tags, 2000 chars)
- * contradicted the real ones (5, 512). A panel that checks one row against the source
- * and finds it invented discounts everything else in the repo. So the ledger is now
- * derived, not authored: every `rule`, `verdict` and `reason` is a literal string
- * produced by the shipped code path.
+ * The ledger is derived, not authored: every `rule`, `verdict` and `reason` is a literal
+ * string produced by the shipped code path, so it cannot drift from the validator.
  *
  * The corpus and the replay themselves live in packages/index/src/integrity-replay.mjs,
  * shared with the public GET /discovery/integrity endpoint — one definition, two

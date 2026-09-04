@@ -3,11 +3,8 @@
  *
  * Two consumers render the catalog-integrity ledger: the build step that bakes
  * apps/web/src/data/integrity.json (apps/web/scripts/gen-integrity.mjs) and the public
- * GET /discovery/integrity endpoint. They used to be one script; the endpoint's arrival
- * would have meant a second copy of the corpus, and two copies is how the pre-generated
- * ledger drifted from the validator in the first place. So the corpus and the replay
- * live here, in packages/index, next to the validator they exercise — one definition,
- * two bindings, nothing to drift.
+ * GET /discovery/integrity endpoint. The corpus and the replay live here, in packages/index,
+ * next to the validator they exercise — one definition, two bindings, nothing to drift.
  *
  * Verdict semantics come from `upsert`'s own contract (packages/index/src/index.mjs):
  *   ok: false                    -> `rejected`  — the whole record is refused

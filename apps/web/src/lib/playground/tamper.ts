@@ -2,16 +2,10 @@
  * The adversarial step: three attacks on the payment you just made, each demonstrating a
  * different property, each with the outcome the property actually predicts.
  *
- * An earlier version of this file ran two attacks against a header taken from the
- * COMPLETED payment. Both were refused, both rendered green, and the page explained the
- * refusals in terms of signature and price validation. Running them against the live
- * chain showed that was wrong twice over: the header's nonce was already consumed, so
- * both were refused for replay before the property under test was ever reached — and one
- * of them, put to a fresh entry, is not refused at all. A green page that credits the
- * wrong control is worse than no page.
- *
- * So each attack now signs a FRESH, unspent entry (`signOnly` — nothing is charged for
- * it) and states its own pass condition:
+ * Each attack signs a FRESH, unspent entry (`signOnly` — nothing is charged for it) and
+ * states its own pass condition. Attacking the header of the completed payment would be
+ * refused for nonce reuse before the property under test is ever reached, and would credit
+ * the wrong control:
  *
  *   replay            resend an entry that already settled.
  *                     PASSES WHEN REFUSED. The nonce was consumed on chain.

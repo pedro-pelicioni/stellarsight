@@ -70,7 +70,7 @@ async function getJSON(path: string): Promise<unknown> {
 }
 
 /**
- * The index (or another agent's fixture) may hand us several shapes. Take them all.
+ * The index, or the baked fixture, may hand us several shapes. Take them all.
  *
  * `resources` comes FIRST deliberately: the two discovery envelopes differ on purpose —
  * `SearchDiscoveryResourcesResponse` names the array `resources` while

@@ -13,7 +13,7 @@
  *      Discovery walks whatever exists; a directory that does not exist yet
  *      simply contributes no files instead of blowing up the whole run.
  *
- *   3. TRUTHFUL COUNTS. The run emits a machine-readable JUnit report to a temp
+ *   3. TRUTHFUL COUNTS. The run emits a machine-readable TAP report to a temp
  *      file alongside the human-readable spec output, and the pass/fail/skip
  *      totals printed at the end are read back from it. If `node --test` were to
  *      exit 0 having executed nothing, the count check still fails the run.
@@ -27,7 +27,6 @@
  *
  * Usage:
  *   node scripts/run-tests.mjs                 # discover and run everything
- *   node scripts/run-tests.mjs --list          # print discovered files, run nothing
  *   node scripts/run-tests.mjs <file|dir>...   # run only these paths
  *   node scripts/run-tests.mjs -- --test-name-pattern=foo   # extra node --test flags
  */
@@ -152,10 +151,9 @@ function readCounts(reportPath) {
 
 function main() {
   const argv = process.argv.slice(2);
-  const listOnly = argv.includes('--list');
   const sep = argv.indexOf('--');
   const passthrough = sep === -1 ? [] : argv.slice(sep + 1);
-  const targets = (sep === -1 ? argv : argv.slice(0, sep)).filter((a) => a !== '--list');
+  const targets = sep === -1 ? argv : argv.slice(0, sep);
 
   const files = discover(targets);
 
@@ -169,8 +167,6 @@ function main() {
     console.error(`       Searched under ${ROOT} for *.test.{mjs,cjs,js} / *.spec.{mjs,cjs,js}.`);
     process.exit(1);
   }
-
-  if (listOnly) process.exit(0);
 
   const reportDir = mkdtempSync(path.join(tmpdir(), 'stellarsight-test-'));
   const reportPath = path.join(reportDir, 'results.tap');
@@ -215,7 +211,7 @@ function main() {
       }
     } else if (exitCode === 0) {
       // No report to verify against — refuse to certify a pass we cannot measure.
-      console.error('FAIL: no JUnit report was produced, so the run could not be verified.');
+      console.error('FAIL: no TAP report was produced, so the run could not be verified.');
       exitCode = 1;
     }
 

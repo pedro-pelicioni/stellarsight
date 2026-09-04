@@ -59,12 +59,6 @@ export const sightNumber = (i: number) => String(i + 1).padStart(2, '0')
 export const explorerTx = (hash: string) =>
   `https://stellar.expert/explorer/testnet/tx/${hash}`
 
-export const explorerAccount = (g: string) =>
-  `https://stellar.expert/explorer/testnet/account/${g}`
-
-export const explorerContract = (c: string) =>
-  `https://stellar.expert/explorer/testnet/contract/${c}`
-
 export function pct(n: number): string {
   return `${Math.round(n * 100)}%`
 }

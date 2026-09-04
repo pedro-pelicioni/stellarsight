@@ -144,14 +144,3 @@ export function appendTxRows(rows) {
   }
   return { appended: rows.length };
 }
-
-export default {
-  STATUS_DIR,
-  PROVENANCE_PATH,
-  TX_DOC_PATH,
-  PROVENANCE_LABELS,
-  writeEvidence,
-  readEvidence,
-  updateProvenance,
-  appendTxRows,
-};

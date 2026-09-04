@@ -288,5 +288,3 @@ export function createFaucetHandler({ env = process.env, deps = {} } = {}) {
     }
   };
 }
-
-export default { createFaucetHandler };

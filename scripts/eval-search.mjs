@@ -329,5 +329,3 @@ function main() {
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isMain) process.exit(main());
-
-export default { runEval, loadGolden, ndcgAt, recallAt, reciprocalRankAt };
