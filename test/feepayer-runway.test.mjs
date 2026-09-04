@@ -48,16 +48,40 @@ test('bucketHourlyBurn puts each fee in the rolling hour it actually happened, n
   assert.equal(buckets.reduce((a, b) => a + b, 0), 300, 'anything past the 24-bucket window is dropped, not overflowed');
 });
 
-test('computeBurnRate flags a last hour more than the multiplier times the 24h median', () => {
-  // Only 2 of the other 23 hourly buckets have any burn at all, so the 24h median is 0.
-  const quietTxs = [tx(20 * HOUR, 50), tx(21 * HOUR, 50)];
-  const spike = computeBurnRate([tx(10 * 60 * 1000, 10_000), ...quietTxs], NOW, { burnMultiplier: 3 });
-  assert.equal(spike.lastHourBurnStroops, 10_000);
-  assert.equal(spike.median24hStroops, 0, 'the median bucket is empty because most hours saw nothing');
-  assert.equal(spike.breach, true, 'zero median plus any last-hour burn is a breach');
+test('computeBurnRate: on a quiet account one ordinary payment in the trailing hour is not a spike', () => {
+  // Only 2 of the other 23 hourly buckets have any burn at all, so the 24h median is 0 — the
+  // shape the deployed fee-payer has every day. Before the floor this read as a breach.
+  const quietTxs = [tx(20 * HOUR, 50_000), tx(21 * HOUR, 50_000)];
+  const one = computeBurnRate([tx(10 * 60 * 1000, 50_374), ...quietTxs], NOW, { burnMultiplier: 3 });
+  assert.equal(one.lastHourBurnStroops, 50_374);
+  assert.equal(one.median24hStroops, 0, 'the median bucket is empty because most hours saw nothing');
+  assert.equal(one.floorStroops, 5_000_000, 'the default floor is 0.5 XLM per hour');
+  assert.equal(one.breach, false, 'a settlement-sized fee sits two orders of magnitude under the floor');
+});
 
+test('computeBurnRate: a burst above the floor on a quiet account is a spike', () => {
+  const burst = computeBurnRate([tx(10 * 60 * 1000, 6_000_000), tx(20 * HOUR, 50_000)], NOW, { burnMultiplier: 3 });
+  assert.equal(burst.median24hStroops, 0);
+  assert.equal(burst.breach, true, 'above the floor with a zero median, the multiplier is trivially cleared');
+});
+
+test('computeBurnRate: on a busy account the multiplier, not the floor, decides', () => {
   const steady = computeBurnRate(Array.from({ length: 24 }, (_, i) => tx(i * HOUR + 1, 100)), NOW, { burnMultiplier: 3 });
   assert.equal(steady.breach, false, 'a flat burn rate never exceeds its own median by 3x');
+
+  // 23 hours at 3,000,000 stroops -> median 3,000,000. The trailing hour is judged against 9,000,000.
+  const history = Array.from({ length: 23 }, (_, i) => tx((i + 1) * HOUR + 1, 3_000_000));
+  const spike = computeBurnRate([tx(10 * 60 * 1000, 10_000_000), ...history], NOW, { burnMultiplier: 3 });
+  assert.equal(spike.median24hStroops, 3_000_000);
+  assert.equal(spike.breach, true, '10,000,000 clears both the floor and 3x the median');
+
+  const under = computeBurnRate([tx(10 * 60 * 1000, 6_000_000), ...history], NOW, { burnMultiplier: 3 });
+  assert.equal(under.breach, false, 'above the floor but under 3x the median is ordinary traffic for this account');
+});
+
+test('computeBurnRate: a zero floor restores the strict any-burn rule', () => {
+  const strict = computeBurnRate([tx(10 * 60 * 1000, 1)], NOW, { burnMultiplier: 3, burnFloorStroops: 0 });
+  assert.equal(strict.breach, true);
 });
 
 test('computeRunway divides by the full 7-day window, not by however much history exists', () => {

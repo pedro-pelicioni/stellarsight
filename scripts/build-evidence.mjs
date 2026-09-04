@@ -530,7 +530,9 @@ if (feepayer?.balanceXlm) {
   );
   w(
     `| Last-hour burn vs 24h median | ${n(feepayer.burnRate?.lastHourBurnStroops)} vs ${n(feepayer.burnRate?.median24hStroops)} stroops | ` +
-      `> ${n(feepayer.burnRate?.multiplier)}× median | ${feepayer.burnRate?.breach ? '🔴 breach' : '✅ ok'} |`,
+      `> ${n(feepayer.burnRate?.multiplier)}× median${
+        Number.isFinite(feepayer.burnRate?.floorStroops) ? ` and > ${n(feepayer.burnRate.floorStroops)} stroops floor` : ''
+      } | ${feepayer.burnRate?.breach ? '🔴 breach' : '✅ ok'} |`,
   );
   if (feepayer.perTxFee) {
     w(

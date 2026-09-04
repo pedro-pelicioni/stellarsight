@@ -181,10 +181,10 @@ window, successful or not, since a fee is charged either way. Regenerate with
 
 | Signal | Value | Threshold | Status |
 |---|---|---|---|
-| Balance | 9999.4904797 XLM | — | — |
-| Runway | 3109902.14 days | < 7 days | ✅ ok |
-| Last-hour burn vs 24h median | 0 vs 0 stroops | > 3× median | ✅ ok |
-| Last conformance fee | 50,374 stroops | > 250,000 stroops | ✅ ok |
+| Balance | 19999.4881758 XLM | — | — |
+| Runway | 6692661.18 days | < 7 days | ✅ ok |
+| Last-hour burn vs 24h median | 0 vs 0 stroops | > 3× median and > 5,000,000 stroops floor | ✅ ok |
+| Last conformance fee | 33,216 stroops | > 250,000 stroops | ✅ ok |
 
 Artifact: [`docs/status/feepayer.json`](./status/feepayer.json)
 

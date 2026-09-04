@@ -34,7 +34,7 @@ jobs:
     # are the ones needing a live local stack — the agent's replay guard and the live
     # halves of the replay-naming suite, which want a facilitator on localhost:4021.
     # Booting the full stack inside CI would test the boot, not the guard; the nightly
-    # settles against the deployment instead. Current shape: 276 tests, 0 failing.
+    # settles against the deployment instead. Current shape: 279 tests, 0 failing.
     services:
       redis:
         image: redis:7-alpine
@@ -115,7 +115,7 @@ jobs:
       - name: Detect contracts/ changes
         id: filter
         if: github.event_name != 'schedule'
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3, Node 24 runtime
         with:
           filters: |
             contracts:

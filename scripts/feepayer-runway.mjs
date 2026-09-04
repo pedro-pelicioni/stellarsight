@@ -9,7 +9,8 @@
  * four numbers MONITORING.md's "Fee sponsorship" table already names:
  *
  *   - current XLM balance
- *   - fee burn over the last hour, against the trailing 24h median (row 2: > 3x = spike)
+ *   - fee burn over the last hour, against the trailing 24h median (row 2: > 3x = spike),
+ *     once it clears an absolute floor — see BURN_FLOOR_STROOPS for why the floor exists
  *   - days of runway at the trailing 7-day burn rate (row 1: < 7 days = page)
  *   - the nightly conformance settlement's own fee, against half the 500k-stroop ceiling
  *     (row 3) — read from docs/status/soroban-footprint.json rather than re-fetched,
@@ -29,11 +30,11 @@
  *   node scripts/feepayer-runway.mjs
  *   node scripts/feepayer-runway.mjs --feepayer G... --horizon https://horizon-testnet.stellar.org
  *   node scripts/feepayer-runway.mjs --emit                 # write docs/status/feepayer.json
- *   node scripts/feepayer-runway.mjs --runway-days 999999999 --burn-multiplier 0  # force a breach
+ *   node scripts/feepayer-runway.mjs --runway-days 999999999 --burn-multiplier 0 --burn-floor-stroops 0  # force a breach
  *
- * Exits non-zero if runway is under --runway-days, the last hour's burn exceeds
- * --burn-multiplier times the trailing 24h median, or the last conformance settlement's
- * fee exceeds --fee-ceiling-half stroops.
+ * Exits non-zero if runway is under --runway-days, the last hour's burn exceeds both
+ * --burn-floor-stroops and --burn-multiplier times the trailing 24h median, or the last
+ * conformance settlement's fee exceeds --fee-ceiling-half stroops.
  */
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +55,18 @@ const STROOPS_PER_XLM = 10_000_000;
 const HORIZON_PAGE_LIMIT = 200; // Horizon's actual per-page max; confirmed live — 201 is refused
 const RUNWAY_WINDOW_DAYS = 7;
 const BURN_SPIKE_WINDOW_HOURS = 24;
+/**
+ * The smallest trailing-hour burn worth calling a spike at all, in stroops: 0.5 XLM, about a
+ * hundred sponsored settlements at the ~50,000-stroop fee the nightly conformance run pays.
+ *
+ * Why a floor: on a quiet account 23 of the 24 hourly buckets are empty, so the trailing-24h
+ * median is 0 and "more than 3x the median" degrades to "any fee in the trailing hour is a
+ * breach". One playground payment landing in the hour before a scheduled check would then
+ * open a public drain alert. Below the floor the runway rule is the one that matters; above
+ * it the multiplier still has to be cleared, so a busy account is judged against its own
+ * history rather than against this constant.
+ */
+const BURN_FLOOR_STROOPS = 5_000_000;
 const REQUEST_TIMEOUT_MS = 8000;
 
 const trim = (u) => String(u || '').replace(/\/+$/, '');
@@ -134,14 +147,27 @@ export function bucketHourlyBurn(txs, nowMs, hours = BURN_SPIKE_WINDOW_HOURS) {
   return buckets;
 }
 
-/** Row 2: last hour's burn against the trailing 24h median. */
-export function computeBurnRate(txs, nowMs, { burnMultiplier = 3 } = {}) {
+/**
+ * Row 2: last hour's burn against the trailing 24h median — a spike only when it clears BOTH
+ * the multiplier and the absolute floor (see BURN_FLOOR_STROOPS).
+ */
+export function computeBurnRate(
+  txs,
+  nowMs,
+  { burnMultiplier = 3, burnFloorStroops = BURN_FLOOR_STROOPS } = {},
+) {
   const buckets = bucketHourlyBurn(txs, nowMs, BURN_SPIKE_WINDOW_HOURS);
   const lastHourBurnStroops = buckets[0];
   const median24hStroops = median(buckets);
   const breach =
-    median24hStroops === 0 ? lastHourBurnStroops > 0 : lastHourBurnStroops > burnMultiplier * median24hStroops;
-  return { lastHourBurnStroops, median24hStroops, multiplier: burnMultiplier, breach };
+    lastHourBurnStroops > burnFloorStroops && lastHourBurnStroops > burnMultiplier * median24hStroops;
+  return {
+    lastHourBurnStroops,
+    median24hStroops,
+    multiplier: burnMultiplier,
+    floorStroops: burnFloorStroops,
+    breach,
+  };
 }
 
 /**
@@ -180,7 +206,10 @@ export function computePerTxFee(footprintEvidence, feeCeilingHalf) {
 
 export function evaluate({ balanceXlm, txs, nowMs, footprintEvidence, thresholds }) {
   const balanceStroops = Math.round(Number(balanceXlm) * STROOPS_PER_XLM);
-  const burnRate = computeBurnRate(txs, nowMs, { burnMultiplier: thresholds.burnMultiplier });
+  const burnRate = computeBurnRate(txs, nowMs, {
+    burnMultiplier: thresholds.burnMultiplier,
+    burnFloorStroops: thresholds.burnFloorStroops,
+  });
   const runway = computeRunway(txs, nowMs, balanceStroops, { runwayDays: thresholds.runwayDays });
   const perTxFee = computePerTxFee(footprintEvidence, thresholds.feeCeilingHalf);
   const breach = Boolean(runway.breach || burnRate.breach || perTxFee?.breach);
@@ -200,6 +229,7 @@ async function main() {
   const thresholds = {
     runwayDays: Number(flag('runway-days', String(RUNWAY_WINDOW_DAYS))),
     burnMultiplier: Number(flag('burn-multiplier', '3')),
+    burnFloorStroops: Number(flag('burn-floor-stroops', String(BURN_FLOOR_STROOPS))),
     feeCeilingHalf: Number(flag('fee-ceiling-half', '250000')),
   };
 
@@ -240,7 +270,7 @@ async function main() {
   console.log(
     `  last-hour burn       ${xlm(result.burnRate.lastHourBurnStroops)} XLM` +
       ` vs trailing-24h median ${xlm(result.burnRate.median24hStroops)} XLM` +
-      ` (>${thresholds.burnMultiplier}x ${result.burnRate.breach ? 'BREACH' : 'ok'})`,
+      ` (>${thresholds.burnMultiplier}x and above the ${xlm(thresholds.burnFloorStroops)} XLM floor: ${result.burnRate.breach ? 'BREACH' : 'ok'})`,
   );
   console.log(
     `  runway               ${result.runway.days === null ? 'unbounded (no burn observed)' : `${result.runway.days.toFixed(2)} days`}` +
