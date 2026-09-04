@@ -5,7 +5,8 @@
  * that PRODUCE evidence (conformance, rejection audit, scripted batches, nightly runs)
  * all write through here into docs/status/*.json with one envelope: what kind of
  * artifact, when it was generated, by which commit, against which stack. Nothing in
- * docs/status/ is ever hand-entered — that is the entire point of the directory.
+ * docs/status/ is typed in, with one exception that says so: upstream-e2e.json records a
+ * manual run of the x402 repository's own e2e suite and carries `recordedBy: "manual"`.
  *
  * docs/status/provenance.json is the hash -> label map that keeps the volume story
  * honest: every settled payment this repo generates records WHY it exists

@@ -21,7 +21,7 @@ sentence rather than in a footnote.
 3. [The Bazaar: the facilitator-side catalog](#3-the-bazaar-the-facilitator-side-catalog)
 4. [Search](#4-search)
 5. [The agent and seller surfaces](#5-the-agent-and-seller-surfaces)
-6. [The `upto` scheme (planned, Tranche 2)](#6-the-upto-scheme-planned-tranche-2)
+6. [The `upto` scheme](#6-the-upto-scheme)
 7. [Security and trust model](#7-security-and-trust-model)
 8. [Monitoring and operations](#8-monitoring-and-operations)
 9. [Deployment topology](#9-deployment-topology)
@@ -80,9 +80,9 @@ registry cannot charge.
 | Facilitator (`/supported`, `/verify`, `/settle`) | Live, testnet, `exact` scheme, fees sponsored | Channel-account pool, `upto`, mainnet with USDC |
 | Bazaar catalog | Live and durable at stellarsight.xyz | Per-seller identity, ownership re-verification |
 | Search | Live, BM25 hybrid, nDCG@10 **0.864** measured | Golden set to 150–200 queries, CPU-only semantic layer |
-| Agent surface | MCP over stdio, 4 tools | Hosted HTTP MCP, TS/Go/Python adapter tests |
-| Threat model + monitoring plan | Published, v0.1 | Implemented, alerts firing |
-| `upto` scheme | Published position, no contract | Spec upstream, contract on testnet |
+| Agent surface | MCP over stdio and over Streamable HTTP at `/mcp`, 4 tools | TS/Go/Python adapter tests |
+| Threat model + monitoring plan | Published, v0.1; fee-payer runway measured nightly and alerted every 6 h | Every row implemented, alerts firing |
+| `upto` scheme | Published position; settlement contract on testnet (`contracts/upto`), not yet wired into the facilitator | Spec upstream, scheme in the facilitator, interop report |
 | Network | `stellar:testnet` only | `stellar:pubnet`, 30 days measured uptime |
 
 ### 1.4 System architecture
@@ -383,7 +383,8 @@ targeting 25–50 concurrent settlements with zero sequence-number failures.
 ### 2.7 Soroban resource limits, measured
 
 A settle is **one** `invokeHostFunction` calling `transfer` on a SEP-41 SAC, carrying a
-single authorization entry with no sub-invocations, wrapped in a fee bump. There is no
+single authorization entry with no sub-invocations (the `upto` contract adds one, measured
+below), wrapped in a fee bump. There is no
 on-chain registry anywhere in this design — the catalog is facilitator-side, in Redis or in
 memory — so that one contract call is the entire on-chain footprint of a payment, and the
 registry-operations clause has no on-chain operation to bound.
@@ -396,19 +397,23 @@ network's live `ConfigSetting` ledger entries — usage fetched, limits fetched,
 typed — and the nightly re-runs it against the payment it has just settled, writing
 [`docs/status/soroban-footprint.json`](status/soroban-footprint.json).
 
-The settlement measured on 2026-08-25 (ledger 4,323,937; the artifact carries the current
+The settlement measured on 2026-09-03 (ledger 4,482,379; the artifact carries the current
 one):
 
 | Resource | Used | Per-transaction limit | Utilization |
 |---|---|---|---|
-| Instructions | 775,728 | 400,000,000 | 0.19% |
+| Instructions | 756,367 | 400,000,000 | 0.19% |
 | Disk read bytes | 376 | 200,000 | 0.19% |
 | Write bytes | 308 | 132,096 | 0.23% |
 | Read ledger entries | 2 | 200 | 1.0% |
 | Write ledger entries | 3 | 200 | 1.5% |
 | Memory | not observable | 41,943,040 (40 MiB) | — |
 
-The binding constraint is ledger entries at 1.5%, about 67× headroom. Memory is the one
+The binding constraint is ledger entries at 1.5%, about 67× headroom. The `settle_upto` call
+in [`contracts/upto`](../contracts/upto) is measured the same way
+([`upto-settlement-footprint.json`](status/upto-settlement-footprint.json)): 829,354
+instructions and one auth sub-invocation, the nested `approve`, at the same 1.5% worst
+utilization. Memory is the one
 limit with no measurement behind it: peak host memory appears in neither the transaction
 envelope nor the result meta, so the artifact records the ceiling and states that usage is
 unobserved rather than inventing a figure to fill the row.
@@ -811,9 +816,9 @@ screens for it.
 
 ---
 
-## 6. The `upto` scheme (planned, Tranche 2)
+## 6. The `upto` scheme
 
-### 6.1 Why there is no contract here yet
+### 6.1 The scheme, and what is still open upstream
 
 `exact` settles one fixed price quoted before the request. Metered services — token
 billing, bandwidth, inference — need `upto`: the buyer authorizes a ceiling and the seller
@@ -956,14 +961,17 @@ Three things, none of which is a fourth spec:
 1. **The discovery-side requirements, contributed to the open spec** (deliverable 2.1). The
    three rows in bold in §6.1, argued upstream while #3134 is still under review.
 2. **The scheme implemented as standardized, and proven interoperable** (deliverable 2.2).
-   Settled testnet hashes for the partial, maximum and zero cases, a negative-test matrix
-   covering above-maximum, altered recipient, altered token, expired authorization, replay
-   and unexpected sub-invocations — and, the part that does not exist on Stellar today, an
-   **interop report showing this facilitator settling a payload produced by a different
-   Stellar `upto` implementation**, published with both parties named. Three implementations
-   exist and no two have been tested against each other, so interoperability here is
-   currently an assertion rather than a measured property.
-3. **Metered pricing in the catalog** (deliverable 2.7). The implementation of what §6.1
+   The contract in [`contracts/upto`](../contracts/upto) already carries the negative-test
+   matrix — above-maximum, altered recipient, altered token, expired authorization, replay
+   and unexpected sub-invocations — in `cargo test`, and has one settled testnet call
+   ([`upto-settlement-deploy.json`](status/upto-settlement-deploy.json)). Still to do: the
+   scheme in the facilitator, settled hashes for the partial, maximum and zero cases through
+   it, and, the part that does not exist on Stellar today, an **interop report showing this
+   facilitator settling a payload produced by a different Stellar `upto` implementation**,
+   published with both parties named. Other implementations exist and no two have been
+   tested against each other, so interoperability here is currently an assertion rather
+   than a measured property.
+3. **Metered pricing in the catalog** (deliverable 2.3). The implementation of what §6.1
    argues: listings that carry a ceiling *and* a unit or typical price, a budget filter that
    stops excluding cheap metered services, and ranking weighted by settled value rather than
    by call count.
@@ -1150,11 +1158,11 @@ all permissive, nothing unknown — is published in
 | | Nightly stock-client conformance in public CI | §5.3 |
 | **T2** ($26,700, ~12 weeks) | Discovery-side requirements into the open `upto` spec, coordinated through the x402 **Technical Steering Committee** | §6.1 |
 | | **§5.4** — implement whatever the open proposals converge on rather than fork them; **if neither has landed by the end of this tranche we author and submit `scheme_upto_stellar.md` ourselves**, so the RFP's named artifact exists on either branch | §6.1 |
-| | `upto` implemented as standardized + a published interop report | §6.3 |
+| | `upto` in the facilitator as standardized (the contract is on testnet already) + a published interop report | §6.3 |
 | | Metered pricing in the catalog: ceiling vs price, budget filters, value-weighted ranking | §6.3 |
-| | Monitoring plan becomes a running system with alerts | §8 |
+| | Monitoring plan becomes a running system with alerts (the fee-payer runway rows already are) | §8 |
 | | CPU-only semantic layer, measured by the T1 harness | §4.3 |
-| | Hosted HTTP MCP + TS/Go/Python adapter tests | §5.1 |
+| | TS/Go/Python adapter tests against the hosted HTTP MCP (`/mcp`, live) | §5.1 |
 | | Contributed x402-on-Stellar pages to the Stellar Developer Docs (§5.7) | §5.3 |
 | | Auth-entry signing shape agreed with wallet teams before the signer ships (§4.6) | §2.2 |
 | | Auth-entry-shaped signer interface for smart accounts — classic keypairs today, custom `__check_auth` accounts in scope here | §2.2 |
@@ -1226,6 +1234,7 @@ runs against the live stack.
 | `apps/seller` | Reference paid API declaring discovery metadata |
 | `apps/agent` | MCP server, payment client, narrated CLI (npm: `@stellarsight/agent`) |
 | `apps/web` | Landing page and live console |
+| `contracts/upto` | The `settle_upto` Soroban contract (Rust) — deployed on testnet, `cargo test` in CI, not yet wired into the facilitator |
 | `api/` | Vercel Functions — thin wrappers that import the modules above, never reimplement them |
 | `scripts/` | Setup, demo loop, conformance harnesses, search evaluation, load baseline |
 | `eval/` | Graded golden set, recorded baselines |

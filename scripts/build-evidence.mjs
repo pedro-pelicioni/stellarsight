@@ -156,6 +156,8 @@ function retallyReadme(counts, provenanceCounts) {
     /(badge\/settled_x402_payments-)\d+(-blue)/,
     `$1${counts.payments}$2`,
   );
+  // The tests badge, from the same derivation test/docs-consistency.test.mjs guards.
+  md = md.replace(/(badge\/tests-)\d+(,_0_failing)/, `$1${deriveCounts().tests}$2`);
 
   // 2. the tally block, regenerated between its markers
   const label = (k) => provenanceCounts[k] ?? 0;
@@ -198,6 +200,7 @@ const rejections = readEvidence('rejections');
 const provenance = readEvidence('provenance');
 const nightly = readEvidence('nightly');
 const upstreamE2e = readEvidence('upstream-e2e');
+const uptoDeploy = readEvidence('upto-settlement-deploy');
 const footprint = readEvidence('soroban-footprint');
 const licenses = readEvidence('licenses');
 const interop = readEvidence('interop-discovery');
@@ -334,7 +337,11 @@ const asset = conformance?.asset ? `SXT (SAC \`${conformance.asset}\`)` : 'SXT';
 w(`| \`exact\` | ${asset} | \`stellar:testnet\` | settled, hashes published |`);
 w(`| \`exact\` | USDC (Circle) | \`stellar:testnet\` | ${upstreamE2e?.summary ? `settled — ${upstreamE2e.summary.passed} payments through the upstream e2e suite, hashes below` : 'supported by the same code path (any SEP-41); not yet exercised here'} |`);
 w('| `exact` | USDC | `stellar:pubnet` | Tranche 3 |');
-w('| `upto` | — | — | Tranche 2. Ships a dedicated Soroban settlement contract (`settle_upto` via `require_auth_for_args`): no admin, no persistent storage, never holds a balance. See [upto-position.md](./upto-position.md). |');
+w(
+  uptoDeploy?.txHash
+    ? `| \`upto\` | UPTO (throwaway SAC \`${uptoDeploy.token}\`) | \`stellar:testnet\` | one settled \`settle_upto\` call from the contract in \`contracts/upto\` — [${uptoDeploy.txHash.slice(0, 8)}…](${uptoDeploy.explorerUrl}); the scheme in the facilitator and the interop report are Tranche 2 |`
+    : '| `upto` | — | — | Tranche 2. Ships a dedicated Soroban settlement contract (`settle_upto` via `require_auth_for_args`): no admin, no persistent storage, never holds a balance. See [upto-position.md](./upto-position.md). |',
+);
 w();
 
 /* ── acceptance criteria ──────────────────────────────────────────────────── */

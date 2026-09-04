@@ -60,7 +60,7 @@ link is in [TESTNET-TXS.md](/evidence/testnet-transactions).
 | `exact` | SXT (SAC `CAYCPWN5YZEHKPGZOXGU3O7R2Q5H7LT7SZ45YIO26VMFM47VBUHOGPO2`) | `stellar:testnet` | settled, hashes published |
 | `exact` | USDC (Circle) | `stellar:testnet` | settled — 6 payments through the upstream e2e suite, hashes below |
 | `exact` | USDC | `stellar:pubnet` | Tranche 3 |
-| `upto` | — | — | Tranche 2. Ships a dedicated Soroban settlement contract (`settle_upto` via `require_auth_for_args`): no admin, no persistent storage, never holds a balance. See [upto-position.md](/upto-position). |
+| `upto` | UPTO (throwaway SAC `CAV4X3SOGWJEZNOI6BE5N5MMMSDUCG2PQ5JSIKJGEDDY2J54VJZ76DN3`) | `stellar:testnet` | one settled `settle_upto` call from the contract in `contracts/upto` — [62846cad…](https://stellar.expert/explorer/testnet/tx/62846cad7a356bf422d5ce1aa03dee92c9bf3e891dc02146b141808445af1029); the scheme in the facilitator and the interop report are Tranche 2 |
 
 ## Acceptance criteria, as observed
 

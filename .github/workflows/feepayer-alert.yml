@@ -60,7 +60,14 @@ jobs:
             echo "$OUTPUT"
             echo "RUNWAY_EOF"
           } >> "$GITHUB_OUTPUT"
-          if [ $STATUS -ne 0 ]; then echo "breach=true" >> "$GITHUB_OUTPUT"; else echo "breach=false" >> "$GITHUB_OUTPUT"; fi
+          # 0 = within thresholds, 1 = breach. Anything else means the account could not be
+          # measured (Horizon down, bad config) — no verdict either way: no page, no close.
+          case $STATUS in
+            0) echo "breach=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "breach=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::warning::monitor:feepayer could not measure the fee-payer (exit $STATUS); no verdict this run"
+               echo "breach=unknown" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       # gh issue create refuses an unknown label; --force makes this safe to run every
       # time rather than a one-off setup step someone has to remember.

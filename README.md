@@ -16,7 +16,7 @@
 
 [![network: stellar:testnet](https://img.shields.io/badge/network-stellar%3Atestnet-brightgreen)](docs/TESTNET-TXS.md)
 [![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-100-blue)](docs/TESTNET-TXS.md)
-[![tests](https://img.shields.io/badge/tests-205,_0_failing-brightgreen)](#running-it)
+[![tests](https://img.shields.io/badge/tests-279,_0_failing-brightgreen)](#running-it)
 [![nDCG@10](https://img.shields.io/badge/nDCG%4010-0.864_measured-blue)](docs/SEARCH-EVAL.md)
 
 </div>
@@ -92,6 +92,7 @@ discovery, payment and settlement are one deployment. Run the commands below and
 | `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` |
 | `POST` | `/playground/fund` | Grants the demo asset to a testnet account so a browser can pay. Per-account, per-IP and global daily caps; testnet is hardcoded |
 | `GET` | [`/explorer/feed`](https://stellarsight.xyz/explorer/feed?limit=10) | This deployment's settled payments, read from Horizon, each labeled with why it exists |
+| `POST` | `/mcp` | The same four MCP tools over Streamable HTTP — stateless, one JSON-RPC request per `POST`. `stellarsight_search`, `_browse` and `_describe` answer; `stellarsight_pay` is refused on the hosted origin and only runs over stdio with a key the agent holds |
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
 
 `?seeded=false` is the additive filter that answers "what here can I actually pay for?".
@@ -237,14 +238,14 @@ criteria and an explicit note about what is *not* mapped. The rows below are the
 | **3.3 Agent-facing MCP interface** | `apps/agent` — 4 MCP tools with input **and** output schemas, 17-code error enum | Settled payments via MCP |
 | **3.6 Conformance** — *"drift, not inability, is the failure mode being screened for"* | `npm run verify:conformance` — an **unmodified** `@x402/fetch` client driven through a real 402 → sign → settle → 200. It caught v1 drift in our own seller | [Documented below](#conformance) |
 | **3.2 seller helpers** — per-parameter descriptions that make an endpoint legible to an agent | `apps/seller`, declared via `declareDiscoveryExtension` | Working |
-| **UX** — *"docs to a paid, discoverable endpoint appearing in the Bazaar in well under an hour"* | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — four steps, each ending in a `curl` check. A resource is listed on seller boot **and** re-cataloged on settle, so it is discoverable before its first payment | **59s** of commands, measured |
+| **UX** — *"docs to a paid, discoverable endpoint appearing in the Bazaar in well under an hour"* | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — five steps, each ending in a check. A resource is listed on seller boot **and** re-cataloged on settle, so it is discoverable before its first payment | **59s** of commands, measured |
 | **5.8 Two end-to-end example integrations** | Both exist and run in CI: `apps/seller` is a paid API with three real routes that announces itself into the catalog, and `apps/agent` is an MCP agent that discovers and pays for a resource with no prior integration — the two examples the RFP names | Working, testnet |
 
 **What we deliberately did not build**, and why: no on-chain registry (the RFP itself calls
 it an optional stretch and explains the rent/TTL cost and the doubled settlement cost); no
-mainnet; no audit; no `upto` implementation — that scheme has [an active design
-discussion](https://github.com/stellar/x402-stellar/issues/72) opened on 3 August 2026 that
-deserves a considered answer rather than a rushed one.
+mainnet; no audit. `upto` has a settlement contract in [`contracts/upto`](contracts/upto),
+deployed on testnet with [one settled call](https://stellar.expert/explorer/testnet/tx/62846cad7a356bf422d5ce1aa03dee92c9bf3e891dc02146b141808445af1029);
+the scheme in the facilitator, the spec upstream and an interop report are Tranche 2.
 
 The point is to leave behind a piece of public infrastructure the Stellar ecosystem is
 currently missing, permissively licensed, that anyone can fork and run.
@@ -489,7 +490,7 @@ is presented as such — the label map is
 
 The full engineering document is [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): the Soroban
 authorization-entry flow, SEP-41/SAC settlement, the fee-bump ceiling and how it was
-derived, the catalog's trust boundary, the planned `upto` contract, the security model, the
+derived, the catalog's trust boundary, the `upto` contract, the security model, the
 monitoring plan, the deployment topology, and how each of those maps to a funded tranche.
 Start there if you are evaluating this rather than running it.
 
@@ -530,8 +531,7 @@ funded deliverable, and this file is the "before" it has to beat.
 
 - [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md) — assets, trust boundaries, and thirteen
   threats each mapped to the control that answers it **and the test that proves it**. The
-  gaps are marked as gaps: no per-seller identity yet, no alerting on fee-payer drain yet,
-  sequence contention undefended.
+  gaps are marked as gaps: no per-seller identity yet, sequence contention undefended.
 - [`docs/MONITORING.md`](docs/MONITORING.md) — the signal, threshold and response for each
   of those surfaces, with what exists today marked ✅ and what is funded work marked ⬜.
 - [`docs/upto-position.md`](docs/upto-position.md) — the position on `upto`, written
@@ -539,9 +539,9 @@ funded deliverable, and this file is the "before" it has to beat.
   The design answer up front: **our `upto` design ships a dedicated Soroban settlement
   contract** (`settle_upto` via `require_auth_for_args`) — no admin, no persistent storage,
   never holds a balance. SEP-41 allowances alone cannot enforce recipient binding or single
-  settlement, which is why a contract is required. Implementation follows whatever
-  [x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134) converges
-  on rather than a private variant of it.
+  settlement, which is why a contract is required. That contract is in
+  [`contracts/upto`](contracts/upto), deployed on testnet; the wire scheme follows whatever
+  [x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134) converges on.
 
 ## License
 
