@@ -137,6 +137,7 @@ test('every stated test count matches the tests that exist', () => {
 
   const claims = [
     ['README.md', /(\d+)\s+tests\b/g],
+    ['README.md', /tests-(\d+),_0_failing/g],
     ['docs-site/index.mdx', /(\d+)\s+tests\b/g],
     ['docs-site/quickstart.mdx', /(\d+)\s+tests\b/g],
     ['docs/ARCHITECTURE.md', /(\d+)\s+tests\b/g],

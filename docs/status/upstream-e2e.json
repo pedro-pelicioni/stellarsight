@@ -4,6 +4,8 @@
   "commit": "388b855",
   "node": "v22.22.3",
   "network": "stellar:testnet",
+  "recordedBy": "manual",
+  "recordedHow": "the x402-foundation/x402 e2e suite run by hand through e2e-proxy/ (see e2e-proxy/README.md); the results were copied into this envelope, not written by a script",
   "ok": true,
   "suite": {
     "repo": "x402-foundation/x402",

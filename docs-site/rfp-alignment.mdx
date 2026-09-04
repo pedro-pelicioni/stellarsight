@@ -19,11 +19,14 @@ Status vocabulary, used strictly:
 | **Delivered** | Working today on `stellar:testnet`, with an artifact anyone can regenerate |
 | **T1 / T2 / T3** | Funded work, in the named tranche ([ARCHITECTURE §10](/architecture#10-architecture-mapped-to-the-funded-tranches)) |
 | **Position** | A decision taken and written down, with the reasoning, rather than a build |
+| **Prototype** | On testnet today; the funded tranche is what makes it standard, interoperable and reviewed |
 | **Not built** | Absent, and said so |
 
-Every number below is generated. `npm run evidence:build` rewrites
-[EVIDENCE.md](/evidence/verify-it-yourself) and the README from `docs/status/*.json`; nothing in that
-directory is hand-entered.
+Every count below is one `npm run evidence:build` derives — from `docs/status/*.json`, the
+test files and the conformance harness. Nothing in that directory is typed in, with one
+exception that says so: `upstream-e2e.json` records a manual run of the x402 repository's
+own suite and carries `recordedBy: "manual"`. This file is maintained against those
+artifacts.
 
 ---
 
@@ -37,7 +40,7 @@ The hardest table in the RFP, because each row is pass/fail rather than a judgem
 | 2 | `/supported` advertises the Stellar extra including `areFeesSponsored` | **Delivered** | `curl -s https://stellarsight.xyz/supported`; asserted in `npm run verify:api` |
 | 3 | The `payload: { transaction }` shape is accepted verbatim | **Delivered** | Named criterion `payload-transaction-verbatim`, read off the header the stock client sent; the reading is pinned by `test/payment-shape.test.mjs` against a real recorded payload |
 | 4 | A passing run of the x402 repository's own e2e suite, on both networks | **Delivered** on testnet, 6/6 · pubnet is **T3** | [`upstream-e2e.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/upstream-e2e.json), pinned to suite commit `6557149` |
-| 5 | A settled transaction hash published per network per scheme | **Delivered** for `exact`/testnet · `upto` is **T2** · pubnet is **T3** | [TESTNET-TXS.md](/evidence/testnet-transactions) |
+| 5 | A settled transaction hash published per network per scheme | **Delivered** for `exact`/testnet · `upto` **Prototype** — one settled `settle_upto` call on testnet, not yet through the facilitator · pubnet is **T3** | [TESTNET-TXS.md](/evidence/testnet-transactions) · [`upto-settlement-deploy.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/upto-settlement-deploy.json) |
 | 6 | Every rejection carries a non-null reason | **Delivered**, 11/11 | `node scripts/verify-rejections.mjs` → [`rejections.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/rejections.json) |
 
 ---
@@ -75,6 +78,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | MCP interface an agent can discover and pay through | **Delivered** | `apps/agent` — four MCP tools with input **and** output schemas, 17-code error enum |
 | Hosted HTTP MCP endpoint | **Delivered** | `api/mcp.mjs` — Streamable HTTP endpoint at `https://stellarsight.xyz/mcp` with stateless transport, per-IP rate limiting, and T5 prompt injection markers |
+| Multi-language (TS, Go, Python) adapter tests against that endpoint | **T2** | ARCHITECTURE §10 |
 
 ---
 
@@ -84,7 +88,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 |---|---|---|
 | *"`batch-settlement` … `auth-capture` is also deferred … **Do not foreclose either.**"* | **Position**, argued positively and checkably | [ARCHITECTURE §6.4](/architecture#64-batch-settlement-and-auth-capture-are-deferred-not-foreclosed) — including the two consumer surfaces that *would* need editing, named |
 | Coordinate the contribution *"through the x402 **Technical Steering Committee**"* | **Position** today, **T2** as a deliverable | [upto-position.md](/upto-position); ARCHITECTURE §10 |
-| `upto` implemented as standardized, with an interop report | **T2** | [ARCHITECTURE §6.3](/architecture#63-what-tranche-2-delivers) |
+| `upto` implemented as standardized, with an interop report | **Prototype** — the contract in `contracts/upto` is deployed and footprint-measured; the scheme in the facilitator, the spec upstream and the interop report are **T2** | [ARCHITECTURE §6.3](/architecture#63-what-tranche-2-delivers) · [`upto-settlement-footprint.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/upto-settlement-footprint.json) |
 
 ---
 

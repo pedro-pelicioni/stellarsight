@@ -10,6 +10,7 @@ const QUICKSTART =
  *  thing a developer reads and the thing they paste cannot drift apart. */
 const CMD_BOOTSTRAP = 'npm install && npm run setup'
 const CMD_DEV = 'npm run dev:all'
+const CMD_CHECK = 'STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check'
 const CMD_SEARCH = "curl -s 'localhost:4022/discovery/search?query=weather'"
 const CMD_CONFORMANCE = 'npm run verify:conformance'
 
@@ -89,6 +90,39 @@ const STEPS: Step[] = [
   },
   {
     n: '03',
+    time: '0.4 s',
+    title: 'Check it before it is announced',
+    body: (
+      <>
+        <code>stellarsight-seller check</code> replays your routes through the index's own
+        integrity validator — the same <code>upsert()</code> the hosted catalog runs — with no
+        facilitator or index up. A bad host, a malformed <code>routeTemplate</code> or an
+        over-length tag shows up here, not as a silent soft-drop after the first announce.
+      </>
+    ),
+    code: (
+      <>
+        <div className="row">
+          <span className="t-p">$ </span>
+          <span className="path">{CMD_CHECK}</span>
+        </div>
+        <div className="row">
+          <span className="t-good">ok</span>
+          <span className="t-dim"> </span>
+          <span className="path">GET /v1/fx/usd-brl</span>
+        </div>
+        <div className="row">
+          <span className="t-good">3/3</span>
+          <span className="t-dim"> </span>
+          <span className="path">route(s) ok</span>
+          <span className="note">exit 0</span>
+        </div>
+      </>
+    ),
+    copy: CMD_CHECK,
+  },
+  {
+    n: '04',
     time: 'one curl',
     title: 'You are already listed',
     body: (
@@ -115,7 +149,7 @@ const STEPS: Step[] = [
     copy: CMD_SEARCH,
   },
   {
-    n: '04',
+    n: '05',
     time: '10 s',
     title: 'Take a real payment',
     body: (

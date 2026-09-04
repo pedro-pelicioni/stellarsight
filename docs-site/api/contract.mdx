@@ -158,6 +158,7 @@ reasons they are easy to get wrong:
 - `GET  /discovery/search?query&limit&cursor&...filters`
   -> `{ x402Version, resources: DiscoveryResource[], partialResults, pagination: { limit, cursor } }`
 - `EXTENSION-RESPONSES` header = base64(JSON) of `{ bazaar: { status: "success"|"processing"|"rejected", rejectedReason? } }`
+- `POST /mcp` -> MCP over Streamable HTTP, stateless (one JSON-RPC request per `POST`; `GET` answers `405`). `stellarsight_search` / `_browse` / `_describe` are live; `stellarsight_pay` is registered and refused on the hosted origin.
 
 **`/verify` and `/settle` are rate limited; nothing else is.** Over the configured
 per-caller budget they answer `429` with `Retry-After` and
