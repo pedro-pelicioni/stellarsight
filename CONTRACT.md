@@ -1,6 +1,6 @@
 # STELLARSIGHT — Integration Contract (read this first)
 
-Monorepo, plain npm workspaces, Node 22, ESM (`"type": "module"`). No TypeScript build step
+Monorepo, plain npm workspaces, Node 22 or newer (CI and the deployment run 24), ESM (`"type": "module"`). No TypeScript build step
 anywhere except `apps/web` (Vite). Everything must run with `node <file>.mjs` or `npm run dev`.
 
 ## Ports (fixed, do not change)
