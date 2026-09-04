@@ -3,7 +3,7 @@ title: "API contract"
 description: "Every HTTP surface, wire shape and field name — the contract the conformance harness enforces."
 ---
 
-Monorepo, plain npm workspaces, Node 22, ESM (`"type": "module"`). No TypeScript build step
+Monorepo, plain npm workspaces, Node 22 or newer (CI and the deployment run 24), ESM (`"type": "module"`). No TypeScript build step
 anywhere except `apps/web` (Vite). Everything must run with `node <file>.mjs` or `npm run dev`.
 
 ## Ports (fixed, do not change)

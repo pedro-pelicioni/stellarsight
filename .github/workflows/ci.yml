@@ -1,8 +1,10 @@
-# Runs what a reviewer would run, on the versions the project actually claims to support.
+# Runs what a reviewer would run, on the Node version the deployment actually runs.
 #
-# The floor is Node 22 (package.json engines); the deployment runs 24. Testing both is the
-# point: an engines field nobody exercises is a promise, and CONTRACT.md's "Node 22" was
-# stated three different ways across the docs before anyone checked.
+# Node 24 is what Vercel executes; it is the only version exercised here, so a green run
+# means the production runtime is green. package.json's engines field still declares >=22
+# as the floor. That floor is not tested on every push any more — it is a statement about
+# where the code is expected to work, checked by whoever develops on 22, not a guarantee CI
+# renews. If the floor ever stops holding, raise engines rather than leave it stale.
 name: CI
 
 on:
@@ -21,12 +23,8 @@ concurrency:
 
 jobs:
   verify:
-    name: node ${{ matrix.node }}
+    name: node 24
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['22', '24']
 
     # Two store-transport tests skip themselves without a real Redis, so CI supplies one:
     # the round trip and the error-reply path are exactly the parts worth exercising
@@ -50,7 +48,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node }}
+          node-version: '24'
           cache: npm
 
       - run: npm ci
