@@ -956,5 +956,95 @@
     "assetCode": "SXT",
     "from": "GCMQAPC3HUFRWD7MLFVI5LYVCNKZ6SAGVALTTRYK6ESIP6JRC47HIYAL",
     "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "eef8f3b5fdb23c81348509655e52e4d8ec17654be7df2540752a41fb0cff2c94",
+    "label": "conformance: nightly hosted 2026 08 26 /v1/fx/usd brl 2026 08 26",
+    "source": "live",
+    "settledAt": "2026-08-26T07:28:48Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GAIP6O46NXSRKMG4RHU73VG5PNXZ7L3GCO7YRGYCWC4NSOUGC5X25MZY",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "c0b131d4716ba4d2c06127cf4c1f2ba169a60ae93848cec92f55c896d29b4b0a",
+    "label": "conformance: nightly hosted 2026 08 27 /v1/fx/usd brl 2026 08 27",
+    "source": "live",
+    "settledAt": "2026-08-27T17:52:32Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GCLDSOJAELORCZO4MZIIQHBJDQPRJVNCM5N5IF5H4F4QILE5WGEWSSSJ",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "832e2c8a49f3ed0bdf3fb5a8262fb804fff6c52722b8dcb0b83bf63916159a50",
+    "label": "conformance: nightly hosted 2026 08 28 /v1/fx/usd brl 2026 08 28",
+    "source": "live",
+    "settledAt": "2026-08-28T18:58:02Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GDUBLIMLLPXV7OUYVGM456MD6JD6AKYZJMZHMIGMBZYTEAKDL5XC636S",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "cb2db79b561f6115f3f7c036ca055de937792a2742b036a47a70cce69974f39c",
+    "label": "conformance: nightly hosted 2026 08 29 /v1/fx/usd brl 2026 08 29",
+    "source": "live",
+    "settledAt": "2026-08-29T12:49:02Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC4F6MUSXMDSTJ2WMMT2EPD6SMJFRHXMLAQC7EVK2B473NRB64RFDE5E",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "d968c0de514f51b30ba420e3071ae1a9a2ee711b0e8e9fdcd03414ddf41ebe46",
+    "label": "conformance: nightly hosted 2026 08 30 /v1/fx/usd brl 2026 08 30",
+    "source": "live",
+    "settledAt": "2026-08-30T12:10:32Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GBEN2MLD7W47XIJHJWS6MW4BD2STIUEBVJUUE7C6S7AMHDPQHDRDD5JU",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "3b4d6d293cc510f4abd98dadbb8c624cf82014537cb5a98e110f0e18427e722a",
+    "label": "conformance: nightly hosted 2026 08 31 /v1/fx/usd brl 2026 08 31",
+    "source": "live",
+    "settledAt": "2026-08-31T14:20:47Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GDV62LJITIKFKDBL7VPQC53UYE7VDEWLXMSBCAMTVZRXPZO6EV7LMQAY",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "36b1e275d6cc34acd4d04bafd6dc92f8e077edb929a960e7701afa1d4191b036",
+    "label": "conformance: nightly hosted 2026 09 01 /v1/fx/usd brl 2026 09 01",
+    "source": "live",
+    "settledAt": "2026-09-01T11:57:37Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GBVCPZ5NGPXNYFE5VEWVG3U56EVGFM7KW75OIJAET4AE3S6PPCFF26LH",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "a5ddac7c88c7635ec0694b5cd077f9ca486d2010614f77d1f3986c4fbcd8847c",
+    "label": "conformance: nightly hosted 2026 09 02 /v1/fx/usd brl 2026 09 02",
+    "source": "live",
+    "settledAt": "2026-09-02T11:39:47Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GBI2MSL33SBKKDQONFS5GLPL6IT3RXHAKHXJS3MKOXIIMZF6C52GDKQT",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "cd20ba28fb44267cf17856a0383fdb767d0bf8ad5563dfb66341af4034fc680a",
+    "label": "conformance: nightly hosted 2026 09 03 /v1/fx/usd brl 2026 09 03",
+    "source": "live",
+    "settledAt": "2026-09-03T11:38:02Z",
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GCQ3CLPSO23TVZM2DTXZ6ODNSLTYEVGB7X75WS73WC5SX46U77BDVVX7",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   }
 ]

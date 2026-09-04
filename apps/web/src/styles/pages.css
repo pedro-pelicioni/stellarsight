@@ -124,15 +124,15 @@
   border-bottom: 1px solid var(--rule);
   background: rgba(242, 237, 227, 0.025);
 }
-.terminal__dots {
-  display: flex;
-  gap: 5px;
-}
-.terminal__dots i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--g-600);
+.terminal__method {
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  padding: 0.12rem 0.42rem;
+  border: 1px solid rgba(245, 64, 14, 0.45);
+  border-radius: var(--r-sm);
+  color: var(--accent);
 }
 .terminal__title {
   font-family: 'DM Mono', Menlo, monospace;

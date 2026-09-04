@@ -186,7 +186,7 @@ export function SellerPath() {
             <StarGlyph /> For sellers
           </span>
           <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
-            Docs to a paid, discoverable endpoint. <em>Fifty-nine seconds.</em>
+            From docs to a paid, discoverable endpoint in <em>fifty-nine</em> seconds.
           </h2>
           <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
             The RFP sets the bar at <em>well under an hour</em>. Every command below was timed

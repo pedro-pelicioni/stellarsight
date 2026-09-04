@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Landing from './routes/Landing'
 import Console from './routes/Console'
+import NotFound from './routes/NotFound'
 import './styles/base.css'
 import './styles/sight.css'
 import './styles/pages.css'
@@ -43,7 +44,7 @@ const router = createBrowserRouter([
       </Suspense>
     ),
   },
-  { path: '*', element: <Landing /> },
+  { path: '*', element: <NotFound /> },
 ])
 
 createRoot(document.getElementById('root')!).render(
