@@ -61,7 +61,7 @@ The RFP calls this *"the core new capability"* and *"the hardest part of the sco
 | Requirement | Status | Evidence |
 |---|---|---|
 | Automatic cataloging, with no separate seller registration | **Delivered** | [ARCHITECTURE §3.1](/architecture#31-cataloging-is-a-side-effect-of-getting-paid) — a listing is a side effect of a **settled** payment; `/verify` never writes to the catalog |
-| Readable by the stock `@x402/extensions` client | **Delivered** | `npm run check:bazaar` against any deployment; 49 checks in `npm run verify:api` |
+| Readable by the stock `@x402/extensions` client | **Delivered** | `npm run check:bazaar` against any deployment; 54 checks in `npm run verify:api` |
 | Catalog integrity — *"the facilitator is a trust boundary"* | **Delivered** | 70 adversarial tests: traversal under triple encoding, `iconUrl` SSRF, tag flooding, external `$ref`, and resource URLs on hosts nobody outside can reach |
 | Natural-language search, with a stated evaluation method | **Delivered** | `npm run eval:search` → nDCG@10 0.864 over a 50-query graded set, with a CI regression gate |
 | Listings representable consistently with other facilitators', *"so Stellar is not a walled garden"* | **Delivered** | `npm run verify:interop` → [one client, two facilitators](/evidence/verify-it-yourself#interoperability-one-client-two-facilitators); [ARCHITECTURE §3.6](/architecture#36-interoperability-measured-against-another-facilitator) |

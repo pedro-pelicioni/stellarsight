@@ -1212,7 +1212,7 @@ runs against the live stack.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate |
-| Integrity is real | `npm test` → 256 tests, 70 adversarial |
+| Integrity is real | `npm test` → 276 tests, 70 adversarial |
 | A stock client can pay us | `npm run verify:conformance` |
 | The concurrency limit is real | `npm run load:baseline` |
 
