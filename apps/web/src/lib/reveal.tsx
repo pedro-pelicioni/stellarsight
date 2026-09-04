@@ -39,7 +39,7 @@ function observer(): IntersectionObserver {
 }
 
 /** Ref for a block whose descendants should reveal when it scrolls into view. */
-export function useReveal<T extends Element>() {
+function useReveal<T extends Element>() {
   const ref = useRef<T | null>(null)
   useEffect(() => {
     const el = ref.current

@@ -1,8 +1,8 @@
 {
   "name": "@stellarsight/agent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "STELLARSIGHT agent surface \u2014 MCP server + x402 payment client for the Stellar Bazaar",
+  "description": "STELLARSIGHT agent surface — MCP server + x402 payment client for the Stellar Bazaar",
   "author": "Pedro Pelicioni",
   "bin": {
     "stellarsight-mcp": "./src/mcp-server.mjs",

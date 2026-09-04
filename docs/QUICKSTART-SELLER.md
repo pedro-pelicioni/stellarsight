@@ -124,7 +124,7 @@ running**, so a bad host, a malformed `routeTemplate` or an over-length tag show
 the first announce, not after.
 
 ```bash
-STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check
+STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check --config apps/seller/stellarsight.config.mjs
 ```
 
 **Check:**

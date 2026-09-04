@@ -2,9 +2,9 @@
 /**
  * STELLARSIGHT — terminal demo of the agent loop.
  *
- *   node apps/agent/src/cli.mjs "usd to brl exchange rate"
- *   node apps/agent/src/cli.mjs "..." --dry-run # discovery only, never spends
- *   node apps/agent/src/cli.mjs "..." --max-price 20000
+ *   stellarsight "usd to brl exchange rate"          (npx stellarsight, or npm run demo -w apps/agent)
+ *   stellarsight "..." --dry-run                      discovery only, never spends
+ *   stellarsight "..." --max-price 20000
  *
  * Narrates the four movements of an instrument fix:
  *   QUERY -> SIGHTS TAKEN -> BEARING FIXED -> PAYMENT SETTLED
@@ -107,7 +107,7 @@ function usage() {
   out();
   out(hi('  stellarsight') + dim(' — agent-side demo of the Stellar Bazaar payment loop'));
   out();
-  out(`  ${key('node apps/agent/src/cli.mjs')} ${dim('"usd to brl exchange rate"')}`);
+  out(`  ${key('stellarsight')} ${dim('"usd to brl exchange rate"')}`);
   out();
   out(`  ${dim('--dry-run, -n')}     discover and rank only; never signs, never spends`);
   out(`  ${dim('--max-price N')}     refuse to pay above N atomic units`);
@@ -279,7 +279,7 @@ function footerDown() {
   out();
   out(dim('  Nothing was signed and nothing was spent.'));
   out(dim(`  Bring the stack up:  ${pc.reset(pc.cyan('npm run dev:all'))}${dim('   (facilitator :4021 · index :4022 · seller :4023)')}`));
-  out(dim(`  Or point elsewhere:  ${pc.reset(pc.cyan('INDEX_URL=https://... node apps/agent/src/cli.mjs "..."'))}`));
+  out(dim(`  Or point elsewhere:  ${pc.reset(pc.cyan('INDEX_URL=https://... stellarsight "..."'))}`));
   out();
   out(rule());
 }

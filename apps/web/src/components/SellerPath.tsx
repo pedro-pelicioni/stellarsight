@@ -10,7 +10,7 @@ const QUICKSTART =
  *  thing a developer reads and the thing they paste cannot drift apart. */
 const CMD_BOOTSTRAP = 'npm install && npm run setup'
 const CMD_DEV = 'npm run dev:all'
-const CMD_CHECK = 'STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check'
+const CMD_CHECK = 'STELLARSIGHT_ALLOW_PRIVATE_RESOURCES=1 npx stellarsight-seller check --config apps/seller/stellarsight.config.mjs'
 const CMD_SEARCH = "curl -s 'localhost:4022/discovery/search?query=weather'"
 const CMD_CONFORMANCE = 'npm run verify:conformance'
 
