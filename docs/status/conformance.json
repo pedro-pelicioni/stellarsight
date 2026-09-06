@@ -1,7 +1,7 @@
 {
   "kind": "conformance",
-  "generatedAt": "2026-09-05T10:52:48.101Z",
-  "commit": "437f1df",
+  "generatedAt": "2026-09-06T11:17:17.770Z",
+  "commit": "05d814a",
   "node": "v24.20.0",
   "network": "stellar:testnet",
   "ok": true,
@@ -9,15 +9,15 @@
   "route": "/v1/fx/usd-brl",
   "method": "GET",
   "client": "@x402/fetch wrapFetchWithPayment (unmodified)",
-  "payer": "GCFUTGC32AINR7YEUIVYLH6CWNA3NLVOUVWUGKJEBJXOWRUL6RIZSDYX",
+  "payer": "GCFQ7VXKWZLFSHZBQZW33V44CMTTZREFMEFBNHAMNPO4T355TKVYC7KT",
   "amount": "100000",
   "amountDisplay": "0.01 SXT",
   "assetCode": "SXT",
   "asset": "CAYCPWN5YZEHKPGZOXGU3O7R2Q5H7LT7SZ45YIO26VMFM47VBUHOGPO2",
   "scheme": "exact",
-  "txHash": "aca2c7c5d3cbd96b66f9cc4119cff8037107ad5c8812b1e5a4937e0909bb5d7e",
-  "explorerUrl": "https://stellar.expert/explorer/testnet/tx/aca2c7c5d3cbd96b66f9cc4119cff8037107ad5c8812b1e5a4937e0909bb5d7e",
-  "elapsedMs": 7019,
+  "txHash": "a6911ab897823b6476c430c64002fd8436d33ac93e09d3ca40f5241dc27c617d",
+  "explorerUrl": "https://stellar.expert/explorer/testnet/tx/a6911ab897823b6476c430c64002fd8436d33ac93e09d3ca40f5241dc27c617d",
+  "elapsedMs": 6467,
   "criteria": [
     {
       "id": "unpaid-402",
@@ -51,7 +51,7 @@
       "id": "stock-client-200",
       "name": "an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200",
       "expected": "HTTP 200",
-      "observed": "HTTP 200 in 7019ms",
+      "observed": "HTTP 200 in 6467ms",
       "pass": true
     },
     {
@@ -79,7 +79,7 @@
       "id": "tx-hash",
       "name": "the receipt carries a settled transaction hash",
       "expected": "64-hex transaction hash",
-      "observed": "aca2c7c5d3cbd96b66f9cc4119cff8037107ad5c8812b1e5a4937e0909bb5d7e",
+      "observed": "a6911ab897823b6476c430c64002fd8436d33ac93e09d3ca40f5241dc27c617d",
       "pass": true
     }
   ]
