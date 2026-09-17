@@ -1,35 +1,35 @@
 {
   "kind": "feepayer",
-  "generatedAt": "2026-09-16T11:58:33.779Z",
-  "commit": "75c72a8",
+  "generatedAt": "2026-09-17T11:59:59.523Z",
+  "commit": "4d0b7a7",
   "node": "v24.20.0",
   "network": "stellar:testnet",
   "feePayer": "GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT",
   "horizon": "https://horizon-testnet.stellar.org",
   "windowDays": 7,
   "transactionsConsidered": 7,
-  "balanceXlm": "19999.4468781",
-  "balanceStroops": 199994468781,
+  "balanceXlm": "19999.4434352",
+  "balanceStroops": 199994434352,
   "burnRate": {
-    "lastHourBurnStroops": 39609,
+    "lastHourBurnStroops": 34429,
     "median24hStroops": 0,
     "multiplier": 3,
     "floorStroops": 5000000,
     "breach": false
   },
   "runway": {
-    "avgBurnPerHourStroops": 1301.5238095238096,
-    "totalBurnStroops": 218656,
-    "days": 6402574.278624871,
+    "avgBurnPerHourStroops": 1369.3214285714287,
+    "totalBurnStroops": 230046,
+    "days": 6085570.018448483,
     "thresholdDays": 7,
     "breach": false
   },
   "perTxFee": {
-    "stroops": 52270,
+    "stroops": 46313,
     "ceilingHalfStroops": 250000,
     "breach": false,
     "source": "docs/status/soroban-footprint.json",
-    "txHash": "3f6d850dfca396a5d3ea937fb4314993d678f03e945619e1f2d491e2df5c11bb"
+    "txHash": "c72719124d3c091b92bb956f76655893313a2f4d4896ec6c6540f28203f79fe0"
   },
   "breach": false
 }
