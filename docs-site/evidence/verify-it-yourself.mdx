@@ -44,10 +44,10 @@ repo generates is labeled at the moment it settles:
 | Label | Count | What produced it |
 |---|---|---|
 | `scripted-load` | 55 | `node scripts/evidence-batch.mjs` — this repo paying its own seller, serially |
-| `conformance` | 53 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
+| `conformance` | 54 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
 | `demo` | 23 | `npm run demo` — the narrated discover → pay → unlock loop |
 | `setup` | 10 | `scripts/setup-testnet.mjs` — account creation, trustlines, SAC deploy |
-| **total labeled** | **141** | |
+| **total labeled** | **142** | |
 
 An unlabeled hash renders as *unlabeled*, never as *organic*. The full map is
 [`docs/status/provenance.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/provenance.json); every hash with an explorer
@@ -64,8 +64,8 @@ link is in [TESTNET-TXS.md](/evidence/testnet-transactions).
 
 ## Acceptance criteria, as observed
 
-Written by `npm run verify:conformance -- --emit` on 2026-10-04 12:47:53 UTC
-(commit `36368c8`), driving an **unmodified `@x402/fetch` client** —
+Written by `npm run verify:conformance -- --emit` on 2026-10-06 13:33:17 UTC
+(commit `4fa8381`), driving an **unmodified `@x402/fetch` client** —
 no STELLARSIGHT code on the payment path.
 
 | Criterion | Expected | Observed |
@@ -74,13 +74,13 @@ no STELLARSIGHT code on the payment path.
 | ✓ the challenge rides in the PAYMENT-REQUIRED header and decodes with @x402/core | decodes via decodePaymentRequiredHeader | `decoded, 1 requirement(s)` |
 | ✓ the challenge is x402 v2 shaped | x402Version 2, accepts[].amount | `x402Version 2, amount=100000` |
 | ✓ the offer names the scheme and CAIP-2 network | exact @ stellar:testnet | `exact @ stellar:testnet` |
-| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 8091ms` |
+| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 7124ms` |
 | ✓ the receipt rides in the PAYMENT-RESPONSE header and decodes with @x402/fetch | decodes via decodePaymentResponseHeader | `decoded` |
 | ✓ settlement reports success | success=true | `success=true` |
 | ✗ the stock client sends `payload: { transaction }` and the facilitator settles it verbatim | payload keys exactly [transaction], settled | `payment header not observed` |
-| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `a0a45aa8ada49373fb9cb80120848757d80ea7c12c983dbf41918dd76f372c6e` |
+| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `aa3e2c947b5361dc8c3d3c4b52fd1c2af2c7a7fc39ebbbb0d08406f62f5c9902` |
 
-Settled: [`a0a45aa8ada49373fb9cb80120848757d80ea7c12c983dbf41918dd76f372c6e`](https://stellar.expert/explorer/testnet/tx/a0a45aa8ada49373fb9cb80120848757d80ea7c12c983dbf41918dd76f372c6e) · 0.01 SXT · 8091ms end to end.
+Settled: [`aa3e2c947b5361dc8c3d3c4b52fd1c2af2c7a7fc39ebbbb0d08406f62f5c9902`](https://stellar.expert/explorer/testnet/tx/aa3e2c947b5361dc8c3d3c4b52fd1c2af2c7a7fc39ebbbb0d08406f62f5c9902) · 0.01 SXT · 7124ms end to end.
 
 Artifact: [`docs/status/conformance.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/conformance.json)
 
@@ -163,14 +163,14 @@ just settled.
 
 | Resource | Used | Per-transaction limit | Utilization |
 |---|---|---|---|
-| Instructions | 742,747 | 400,000,000 | 0.1857% |
+| Instructions | 742,111 | 400,000,000 | 0.1855% |
 | Disk read bytes | 376 | 200,000 | 0.188% |
 | Write bytes | 308 | 132,096 | 0.2332% |
 | Read ledger entries | 2 | 200 | 1% |
 | Write ledger entries | 3 | 200 | 1.5% |
 | Memory | not observable | 41,943,040 | — |
 
-Worst utilization **1.5%** — about 66.7× headroom against the tightest per-transaction limit. Measured on [`a0a45aa8ada4…`](https://stellar.expert/explorer/testnet/tx/a0a45aa8ada49373fb9cb80120848757d80ea7c12c983dbf41918dd76f372c6e) in ledger 5,018,897.
+Worst utilization **1.5%** — about 66.7× headroom against the tightest per-transaction limit. Measured on [`aa3e2c947b53…`](https://stellar.expert/explorer/testnet/tx/aa3e2c947b5361dc8c3d3c4b52fd1c2af2c7a7fc39ebbbb0d08406f62f5c9902) in ledger 5,054,002.
 
 Memory is the one row without a measurement: Peak host memory is not recorded in the transaction envelope or result meta, so usage is unobserved. The per-transaction limit is reported for completeness.
 
@@ -184,10 +184,10 @@ window, successful or not, since a fee is charged either way. Regenerate with
 
 | Signal | Value | Threshold | Status |
 |---|---|---|---|
-| Balance | 19999.3595697 XLM | — | — |
-| Runway | 3469959.52 days | \< 7 days | ✅ ok |
-| Last-hour burn vs 24h median | 62,215 vs 0 stroops | > 3× median and > 5,000,000 stroops floor | ✅ ok |
-| Last conformance fee | 78,267 stroops | > 250,000 stroops | ✅ ok |
+| Balance | 19999.3503142 XLM | — | — |
+| Runway | 3337794.65 days | \< 7 days | ✅ ok |
+| Last-hour burn vs 24h median | 92,555 vs 0 stroops | > 3× median and > 5,000,000 stroops floor | ✅ ok |
+| Last conformance fee | 113,158 stroops | > 250,000 stroops | ✅ ok |
 
 Artifact: [`docs/status/feepayer.json`](https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/status/feepayer.json)
 
