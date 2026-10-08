@@ -1,11 +1,11 @@
 {
   "kind": "soroban-footprint",
-  "generatedAt": "2026-10-07T13:47:28.514Z",
-  "commit": "73ddbcf",
+  "generatedAt": "2026-10-08T13:55:27.986Z",
+  "commit": "e03bb3d",
   "node": "v24.21.0",
   "network": "stellar:testnet",
-  "txHash": "d1b49b52166a20e42348dd9f55873384db974e0ce9c66905af06a72033b877d5",
-  "ledger": 5071452,
+  "txHash": "bb3a47e3c11135ccb05ffe01653753e07ee342dec91b4946fe4aa981f36f424e",
+  "ledger": 5088828,
   "shape": {
     "feeBumped": true,
     "operations": 1,
@@ -25,9 +25,9 @@
     "memoryBytes": null
   },
   "fees": {
-    "resourceFeeStroops": 75581,
-    "innerFeeStroops": 75681,
-    "feeBumpFeeStroops": 75781
+    "resourceFeeStroops": 79765,
+    "innerFeeStroops": 79865,
+    "feeBumpFeeStroops": 79965
   },
   "rpc": "https://soroban-testnet.stellar.org",
   "limits": {
