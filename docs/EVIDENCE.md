@@ -40,11 +40,11 @@ repo generates is labeled at the moment it settles:
 
 | Label | Count | What produced it |
 |---|---|---|
-| `conformance` | 60 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
+| `conformance` | 61 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
 | `scripted-load` | 55 | `node scripts/evidence-batch.mjs` — this repo paying its own seller, serially |
 | `demo` | 23 | `npm run demo` — the narrated discover → pay → unlock loop |
 | `setup` | 10 | `scripts/setup-testnet.mjs` — account creation, trustlines, SAC deploy |
-| **total labeled** | **148** | |
+| **total labeled** | **149** | |
 
 An unlabeled hash renders as *unlabeled*, never as *organic*. The full map is
 [`docs/status/provenance.json`](./status/provenance.json); every hash with an explorer
@@ -61,8 +61,8 @@ link is in [TESTNET-TXS.md](./TESTNET-TXS.md).
 
 ## Acceptance criteria, as observed
 
-Written by `npm run verify:conformance -- --emit` on 2026-10-12 15:58:37 UTC
-(commit `6591e1c`), driving an **unmodified `@x402/fetch` client** —
+Written by `npm run verify:conformance -- --emit` on 2026-10-13 14:31:02 UTC
+(commit `fed17a5`), driving an **unmodified `@x402/fetch` client** —
 no STELLARSIGHT code on the payment path.
 
 | Criterion | Expected | Observed |
@@ -71,13 +71,13 @@ no STELLARSIGHT code on the payment path.
 | ✓ the challenge rides in the PAYMENT-REQUIRED header and decodes with @x402/core | decodes via decodePaymentRequiredHeader | `decoded, 1 requirement(s)` |
 | ✓ the challenge is x402 v2 shaped | x402Version 2, accepts[].amount | `x402Version 2, amount=100000` |
 | ✓ the offer names the scheme and CAIP-2 network | exact @ stellar:testnet | `exact @ stellar:testnet` |
-| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 6595ms` |
+| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 11207ms` |
 | ✓ the receipt rides in the PAYMENT-RESPONSE header and decodes with @x402/fetch | decodes via decodePaymentResponseHeader | `decoded` |
 | ✓ settlement reports success | success=true | `success=true` |
 | ✗ the stock client sends `payload: { transaction }` and the facilitator settles it verbatim | payload keys exactly [transaction], settled | `payment header not observed` |
-| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `9e9c9002d52fda396cdea1c7c2c495985415b8b28973bfd5aade7c8cc00e43ce` |
+| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `cbfb93a4bbf34e45a4d704334ff6b604a6b7b6c149265fb832b99340a95ea045` |
 
-Settled: [`9e9c9002d52fda396cdea1c7c2c495985415b8b28973bfd5aade7c8cc00e43ce`](https://stellar.expert/explorer/testnet/tx/9e9c9002d52fda396cdea1c7c2c495985415b8b28973bfd5aade7c8cc00e43ce) · 0.01 SXT · 6595ms end to end.
+Settled: [`cbfb93a4bbf34e45a4d704334ff6b604a6b7b6c149265fb832b99340a95ea045`](https://stellar.expert/explorer/testnet/tx/cbfb93a4bbf34e45a4d704334ff6b604a6b7b6c149265fb832b99340a95ea045) · 0.01 SXT · 11207ms end to end.
 
 Artifact: [`docs/status/conformance.json`](./status/conformance.json)
 
@@ -160,14 +160,14 @@ just settled.
 
 | Resource | Used | Per-transaction limit | Utilization |
 |---|---|---|---|
-| Instructions | 742,747 | 400,000,000 | 0.1857% |
+| Instructions | 741,162 | 400,000,000 | 0.1853% |
 | Disk read bytes | 376 | 200,000 | 0.188% |
 | Write bytes | 308 | 132,096 | 0.2332% |
 | Read ledger entries | 2 | 200 | 1% |
 | Write ledger entries | 3 | 200 | 1.5% |
 | Memory | not observable | 41,943,040 | — |
 
-Worst utilization **1.5%** — about 66.7× headroom against the tightest per-transaction limit. Measured on [`9e9c9002d52f…`](https://stellar.expert/explorer/testnet/tx/9e9c9002d52fda396cdea1c7c2c495985415b8b28973bfd5aade7c8cc00e43ce) in ledger 5,159,426.
+Worst utilization **1.5%** — about 66.7× headroom against the tightest per-transaction limit. Measured on [`cbfb93a4bbf3…`](https://stellar.expert/explorer/testnet/tx/cbfb93a4bbf34e45a4d704334ff6b604a6b7b6c149265fb832b99340a95ea045) in ledger 5,175,655.
 
 Memory is the one row without a measurement: Peak host memory is not recorded in the transaction envelope or result meta, so usage is unobserved. The per-transaction limit is reported for completeness.
 
@@ -181,10 +181,10 @@ window, successful or not, since a fee is charged either way. Regenerate with
 
 | Signal | Value | Threshold | Status |
 |---|---|---|---|
-| Balance | 19999.3107174 XLM | — | — |
-| Runway | 2865682.37 days | < 7 days | ✅ ok |
-| Last-hour burn vs 24h median | 72,805 vs 0 stroops | > 3× median and > 5,000,000 stroops floor | ✅ ok |
-| Last conformance fee | 90,445 stroops | > 250,000 stroops | ✅ ok |
+| Balance | 19999.3084017 XLM | — | — |
+| Runway | 3340176.77 days | < 7 days | ✅ ok |
+| Last-hour burn vs 24h median | 23,157 vs 0 stroops | > 3× median and > 5,000,000 stroops floor | ✅ ok |
+| Last conformance fee | 33,353 stroops | > 250,000 stroops | ✅ ok |
 
 Artifact: [`docs/status/feepayer.json`](./status/feepayer.json)
 
