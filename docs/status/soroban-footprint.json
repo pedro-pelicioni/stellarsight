@@ -1,11 +1,11 @@
 {
   "kind": "soroban-footprint",
-  "generatedAt": "2026-10-17T11:06:22.707Z",
-  "commit": "349a4b5",
+  "generatedAt": "2026-10-18T11:37:07.986Z",
+  "commit": "328c631",
   "node": "v24.21.0",
   "network": "stellar:testnet",
-  "txHash": "78411eb5ef12ab81703ad65b4c41f0f98e00c8f7081459e877bf421b036b814e",
-  "ledger": 5242319,
+  "txHash": "a0c7bb63ddbb20e4d0040764fef50940328fd4a9b67dead8a7d605490d7ae3e6",
+  "ledger": 5259967,
   "shape": {
     "feeBumped": true,
     "operations": 1,
@@ -17,7 +17,7 @@
     "authSubInvocations": 0
   },
   "used": {
-    "instructions": 741162,
+    "instructions": 742111,
     "diskReadBytes": 376,
     "writeBytes": 308,
     "diskReadEntries": 2,
@@ -25,9 +25,9 @@
     "memoryBytes": null
   },
   "fees": {
-    "resourceFeeStroops": 16638,
-    "innerFeeStroops": 16738,
-    "feeBumpFeeStroops": 16838
+    "resourceFeeStroops": 135955,
+    "innerFeeStroops": 136055,
+    "feeBumpFeeStroops": 136155
   },
   "rpc": "https://soroban-testnet.stellar.org",
   "limits": {
@@ -39,7 +39,7 @@
     "txMaxWriteLedgerEntries": 200
   },
   "utilizationPercent": {
-    "instructions": 0.1853,
+    "instructions": 0.1855,
     "diskReadBytes": 0.188,
     "writeBytes": 0.2332,
     "diskReadEntries": 1,
